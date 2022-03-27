@@ -1,0 +1,8 @@
+numpy
+pandas
+pillow
+pdf2image
+opencv-python
+fastbook
+torch
+torchvision

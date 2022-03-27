@@ -23,7 +23,7 @@ def load_learner_path(model_path: str):
     return learner
 
 
-def predict_file(learner: Learner, path: str):
+def predict_path(learner: Learner, path: str):
     """
     Predict ECG from a given path (can be PNG or PDF file).
     Return a class and probability of prediction.

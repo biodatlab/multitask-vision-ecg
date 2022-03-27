@@ -4,6 +4,7 @@ from pathlib import Path
 import platform
 import numpy as np
 from fastbook import load_learner
+from fastai.learner import Learner
 from .io import read_pdf_to_image
 
 
@@ -22,7 +23,7 @@ def load_learner_path(model_path: str):
     return learner
 
 
-def predict_file(learner, path: str):
+def predict_file(learner: Learner, path: str):
     """
     Predict ECG from a given path (can be PNG or PDF file).
     Return a class and probability of prediction.
@@ -41,7 +42,7 @@ def predict_file(learner, path: str):
     return {"class": pred, "proba": [float(e) for e in list(pred_proba)]}
 
 
-def predict_array(learner, image: np.array):
+def predict_array(learner: Learner, image: np.array):
     """
     Predict ECG from a given image
     """

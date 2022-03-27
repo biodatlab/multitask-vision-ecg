@@ -1,20 +1,17 @@
-import os
-import os.path as op
 from ecg_utils import *
 from typing import Optional
 
-from fastapi import FastAPI, Query, Header, status
-from fastapi.encoders import jsonable_encoder
+from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+
 
 MODEL_DICT = {
     "scar": "models/scar_model.pkl",
     "lvef40": "models/lvef50_model.pkl",
     "lvef50": "models/lvef40_model.pkl",
 }
-MODELS = {k: load_model(v) for k, v in MODEL_DICT.items()}
+MODELS = {k: load_learner_path(v) for k, v in MODEL_DICT.items()}
 
 
 app = FastAPI()
@@ -35,6 +32,9 @@ app.add_middleware(
 async def predict(payload: Optional[dict] = None):
     """
     Predict class from a given image bytes.
+
+    payload: dict, dictionary with keys `image` with image bytes as value
+        and `model` with model name as value (scar | lvef40 | lvef50).
     """
     model_name = payload.get("model", None)
     if payload is not None and MODELS.get(model_name) is not None:

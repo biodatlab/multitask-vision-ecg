@@ -6,3 +6,4 @@ opencv-python
 fastbook
 torch
 torchvision
+fastapi

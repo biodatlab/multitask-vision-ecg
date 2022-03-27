@@ -1,6 +1,9 @@
 # Backend
 
-FastAPI for backend prediction
+This folder contains small a library for processing ECG files
+and FastAPI for model prediction.
+
+## ECG utilities
 
 ```py
 from ecg_utils import (
@@ -10,3 +13,5 @@ from ecg_utils import (
 learner = load_learner_path("model.pkl")
 prediction = predict_ecg(learner, path)
 ```
+
+##

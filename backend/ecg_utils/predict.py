@@ -1,13 +1,14 @@
 import os.path as op
 import pathlib
 from pathlib import Path
+import platform
 import numpy as np
-from fastbook import *
+from fastbook import load_learner
 from .io import read_pdf_to_image
 
 
-plt = platform.system()
-if plt in ("Linux", "Darwin"):
+current_platform = platform.system()
+if current_platform in ["Linux", "Darwin"]:
     pathlib.WindowsPath = pathlib.PosixPath
 
 

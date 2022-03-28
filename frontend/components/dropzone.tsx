@@ -8,7 +8,7 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { FaCloudUploadAlt } from "react-icons/fa";
 
@@ -35,14 +35,19 @@ const Dropzone = () => {
     },
   });
 
-  useEffect(() => {
-    // Make sure to revoke the data uris to avoid memory leaks
-    files.forEach((file) => URL.revokeObjectURL(file.preview));
+  const handleClearFile = useCallback(() => {
+    // revoke the data uris to avoid memory leaks
+    files.forEach((file: any) => URL.revokeObjectURL(file.preview));
+    // remove files
+    setFiles([]);
   }, [files]);
+
+  const previewFile = files?.[0];
+  const isPdfFile = previewFile?.type === "application/pdf";
 
   return (
     <VStack w="100%" gap={4}>
-      {files.length <= 0 && (
+      {!previewFile && (
         <Flex
           {...getRootProps({ className: "dropzone" })}
           justifyContent={"center"}
@@ -70,7 +75,7 @@ const Dropzone = () => {
         </Flex>
       )}
 
-      {files.length > 0 && (
+      {previewFile && (
         <>
           <Box
             border="2px solid pink"
@@ -78,14 +83,22 @@ const Dropzone = () => {
             p={1}
             borderStyle="dashed"
             position="relative"
+            w={isPdfFile ? "100%" : "auto"}
           >
             <Text textAlign={"center"} my={2} fontSize={14} fontStyle="italic">
               {files[0].path}
             </Text>
-            <Image src={files[0].preview} alt="preview image" />
+            {isPdfFile ? (
+              <embed
+                src={files[0].preview}
+                style={{ width: "100%", height: "50vh" }}
+              />
+            ) : (
+              <Image src={files[0].preview} alt="preview image" />
+            )}
             <CloseButton
               onClick={() => {
-                setFiles([]);
+                handleClearFile();
               }}
               size="md"
               position="absolute"

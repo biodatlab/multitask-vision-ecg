@@ -6,7 +6,8 @@ import Prediction from "../components/prediction";
 import { useState } from "react";
 
 const Home: NextPage = () => {
-  const [result, setResult] = useState(1);
+  const [result, setResult] = useState(null);
+  const [isLoadingResult, setIsLoadingResult] = useState(false);
 
   return (
     <Layout>
@@ -15,14 +16,22 @@ const Home: NextPage = () => {
           12-lead ECG Classification
         </Heading>
         <Text textAlign="left">
-          หทัย AI เป็นแอพพลิเคชั่นที่ใช้ AI
-          ในการทำนายผลของภาพสแกนคลื่นไฟฟ้าหัวใจ (Electrocardiogram, ECG) แบบ 12
-          Lead ในรูปแบบของภาพหรือไฟล์ PDF
+          <Text as="span" fontWeight="bold">
+            หทัย AI
+          </Text>{" "}
+          เป็นแอพพลิเคชั่นที่ใช้ AI ในการทำนายผลของภาพสแกนคลื่นไฟฟ้าหัวใจ
+          (Electrocardiogram, ECG) แบบ 12 Lead ในรูปแบบของภาพหรือไฟล์ PDF
           โดยโมเดลจะทำนายความน่าจะเป็นของการมีรอยแผลเป็นในหัวใจ (Myocardial
           scar) และค่าประสิทธิภาพการทำงานของหัวใจห้องล่างซ้าย (Left ventricular
           ejection fraction, LVEF)
         </Text>
-        <Dropzone />
+        <Dropzone
+          onSubmit={(f) => {
+            setIsLoadingResult(true);
+            console.log(f);
+          }}
+          isLoading={isLoadingResult}
+        />
         {result && (
           <>
             <Divider />

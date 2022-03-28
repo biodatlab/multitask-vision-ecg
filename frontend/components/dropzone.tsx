@@ -7,12 +7,22 @@ import {
   Image,
   Text,
   VStack,
+  CircularProgress,
 } from "@chakra-ui/react";
 import React, { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { FaCloudUploadAlt } from "react-icons/fa";
 
-const Dropzone = () => {
+interface FileWithPreview extends File {
+  preview: string;
+}
+
+interface DropzoneProp {
+  onSubmit: (file: FileWithPreview) => void;
+  isLoading: boolean;
+}
+
+const Dropzone = ({ onSubmit, isLoading }: DropzoneProp) => {
   const [files, setFiles] = useState([] as any);
 
   const {
@@ -37,17 +47,17 @@ const Dropzone = () => {
 
   const handleClearFile = useCallback(() => {
     // revoke the data uris to avoid memory leaks
-    files.forEach((file: any) => URL.revokeObjectURL(file.preview));
+    files.forEach((file: FileWithPreview) => URL.revokeObjectURL(file.preview));
     // remove files
     setFiles([]);
   }, [files]);
 
-  const previewFile = files?.[0];
-  const isPdfFile = previewFile?.type === "application/pdf";
+  const selectedFile = files?.[0];
+  const isPdfFile = selectedFile?.type === "application/pdf";
 
   return (
     <VStack w="100%" gap={4}>
-      {!previewFile && (
+      {!selectedFile && (
         <Flex
           {...getRootProps({ className: "dropzone" })}
           justifyContent={"center"}
@@ -75,7 +85,7 @@ const Dropzone = () => {
         </Flex>
       )}
 
-      {previewFile && (
+      {selectedFile && (
         <>
           <Box
             border="2px solid pink"
@@ -106,7 +116,24 @@ const Dropzone = () => {
               right={1}
             />
           </Box>
-          <Button colorScheme={"pink"}>ทำนาย</Button>
+          {!isLoading ? (
+            <Button
+              onClick={() => onSubmit(selectedFile)}
+              colorScheme={"pink"}
+              px={10}
+            >
+              ทำนาย
+            </Button>
+          ) : (
+            <CircularProgress
+              isIndeterminate
+              color="pink.300"
+              trackColor="pink.100"
+              size="32px"
+              thickness="16"
+              capIsRound
+            />
+          )}
         </>
       )}
     </VStack>

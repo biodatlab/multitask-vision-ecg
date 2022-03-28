@@ -3,7 +3,8 @@ pandas
 pillow
 pdf2image
 opencv-python
-fastbook
+fastai==2.5.3
+fastbook==0.0.16
 torch
 torchvision
 fastapi

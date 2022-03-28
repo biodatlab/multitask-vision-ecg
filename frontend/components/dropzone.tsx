@@ -18,11 +18,12 @@ interface FileWithPreview extends File {
 }
 
 interface DropzoneProp {
+  onClearFile: () => void;
   onSubmit: (file: FileWithPreview) => void;
   isLoading: boolean;
 }
 
-const Dropzone = ({ onSubmit, isLoading }: DropzoneProp) => {
+const Dropzone = ({ onClearFile, onSubmit, isLoading }: DropzoneProp) => {
   const [files, setFiles] = useState([] as any);
 
   const {
@@ -50,7 +51,9 @@ const Dropzone = ({ onSubmit, isLoading }: DropzoneProp) => {
     files.forEach((file: FileWithPreview) => URL.revokeObjectURL(file.preview));
     // remove files
     setFiles([]);
-  }, [files]);
+    // remove result
+    onClearFile();
+  }, [files, onClearFile]);
 
   const selectedFile = files?.[0];
   const isPdfFile = selectedFile?.type === "application/pdf";

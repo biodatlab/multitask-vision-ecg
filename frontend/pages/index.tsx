@@ -26,16 +26,35 @@ const Home: NextPage = () => {
           ejection fraction, LVEF)
         </Text>
         <Dropzone
+          onClearFile={() => setResult(null)}
           onSubmit={(f) => {
             setIsLoadingResult(true);
             console.log(f);
+
+            const formdata = new FormData();
+            formdata.append("file", f, f.name);
+
+            fetch("http://localhost:8000/api/predict", {
+              method: "POST",
+              body: formdata,
+            })
+              .then((res) => {
+                return res.json();
+              })
+              .then((resJson) => {
+                setResult(resJson);
+                console.log("resJson", resJson);
+              })
+              .finally(() => {
+                setIsLoadingResult(false);
+              });
           }}
           isLoading={isLoadingResult}
         />
         {result && (
           <>
             <Divider />
-            <Prediction normality={0.49} lvefgteq40={0.6} lveflw50={0.7} />
+            <Prediction predictionResult={result} />
           </>
         )}
       </Stack>

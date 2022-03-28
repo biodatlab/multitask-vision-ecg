@@ -13,9 +13,12 @@ import {
 import { FaCaretUp } from "react-icons/fa";
 
 interface PredictionProps {
-  normality: number;
-  lvefgteq40: number;
-  lveflw50: number;
+  predictionResult: Array<{
+    prediction_title: string;
+    score: number;
+    labelLt: string;
+    labelRt: string;
+  }>;
 }
 
 interface ValueBoxProps {
@@ -105,18 +108,19 @@ const ValueBox = ({ title, labelLt, labelRt, value }: ValueBoxProps) => {
   );
 };
 
-const Prediction = ({ normality, lvefgteq40, lveflw50 }: PredictionProps) => {
+const Prediction = ({ predictionResult }: PredictionProps) => {
   const {
     isOpen: isOpenPanel,
     onClose: onClosePanel,
     onOpen: onOpenPanel,
-  } = useDisclosure();
+  } = useDisclosure({ defaultIsOpen: true });
 
   return (
     <Stack direction="column" gap={4}>
       <Flex justifyContent="flex-end" alignItems="center">
         <Box>
           <Switch
+            defaultChecked
             size="md"
             colorScheme="pink"
             onChange={(e) =>
@@ -132,7 +136,18 @@ const Prediction = ({ normality, lvefgteq40, lveflw50 }: PredictionProps) => {
             direction={{ base: "column", md: "row" }}
             gap={{ base: 8, md: 2 }}
           >
-            <ValueBox
+            {predictionResult.map(
+              ({ prediction_title, score, labelLt, labelRt }) => (
+                <ValueBox
+                  key={`${prediction_title}-${score}`}
+                  title={prediction_title}
+                  labelLt={labelLt}
+                  labelRt={labelRt}
+                  value={score}
+                />
+              )
+            )}
+            {/* <ValueBox
               title="แผลเป็น"
               labelLt="ไม่มี"
               labelRt="มี"
@@ -148,8 +163,8 @@ const Prediction = ({ normality, lvefgteq40, lveflw50 }: PredictionProps) => {
               title="LVEF < 50"
               labelLt="&#8805; 50"
               labelRt="< 50"
-              value={lveflw50}
-            />
+              value={lvefgteq50}
+            /> */}
           </Stack>
           <Box textAlign="left" fontSize="sm">
             <UnorderedList>

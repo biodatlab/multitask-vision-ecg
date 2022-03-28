@@ -7,3 +7,5 @@ fastbook
 torch
 torchvision
 fastapi
+uvicorn
+python-multipart

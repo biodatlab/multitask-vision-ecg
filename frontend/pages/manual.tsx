@@ -4,7 +4,7 @@ import Layout from "../components/layout";
 const Manual = () => {
   return (
     <Layout>
-      <Stack color="gray.600" direction="column" gap={2} pt={6}>
+      <Stack direction="column" gap={2} pt={6}>
         <Heading as="h1">วิธีการใช้งาน</Heading>
         <OrderedList pl={4}>
           <ListItem>

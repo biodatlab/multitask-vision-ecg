@@ -79,13 +79,7 @@ const Dropzone = () => {
             borderStyle="dashed"
             position="relative"
           >
-            <Text
-              textAlign={"center"}
-              my={2}
-              fontSize={14}
-              color="gray.600"
-              fontStyle="italic"
-            >
+            <Text textAlign={"center"} my={2} fontSize={14} fontStyle="italic">
               {files[0].path}
             </Text>
             <Image src={files[0].preview} alt="preview image" />

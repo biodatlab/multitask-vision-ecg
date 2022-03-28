@@ -34,7 +34,7 @@ const ValueBox = ({ title, labelLt, labelRt, value }: ValueBoxProps) => {
 
   return (
     <Flex flex={1} flexDirection="column" alignItems="center" px={8}>
-      <Heading size="md" as="h3" color="gray.600" textAlign="center" mb={4}>
+      <Heading size="md" as="h3" textAlign="center" mb={4}>
         {title}
       </Heading>
       <Stack

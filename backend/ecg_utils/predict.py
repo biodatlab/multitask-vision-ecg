@@ -1,13 +1,15 @@
 import os.path as op
 import pathlib
 from pathlib import Path
+import platform
 import numpy as np
-from fastbook import *
+from fastbook import load_learner
+from fastai.learner import Learner
 from .io import read_pdf_to_image
 
 
-plt = platform.system()
-if plt in ("Linux", "Darwin"):
+current_platform = platform.system()
+if current_platform in ["Linux", "Darwin"]:
     pathlib.WindowsPath = pathlib.PosixPath
 
 
@@ -21,7 +23,7 @@ def load_learner_path(model_path: str):
     return learner
 
 
-def predict_ecg(learner, path: str):
+def predict_path(learner: Learner, path: str):
     """
     Predict ECG from a given path (can be PNG or PDF file).
     Return a class and probability of prediction.
@@ -37,4 +39,13 @@ def predict_ecg(learner, path: str):
         print("Please provide a PNG or PDF file for classification.")
         return (None, None)
     pred, _, pred_proba = prediction
-    return pred, [float(e) for e in list(pred_proba)]
+    return {"class": pred, "proba": [float(e) for e in list(pred_proba)]}
+
+
+def predict_array(learner: Learner, image: np.array):
+    """
+    Predict ECG from a given image
+    """
+    prediction = learner.predict(image)
+    pred, _, pred_proba = prediction
+    return {"class": pred, "proba": [float(e) for e in list(pred_proba)]}

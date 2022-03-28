@@ -1,6 +1,6 @@
 import numpy as np
 from PIL import Image
-from pdf2image import convert_from_path
+from pdf2image import convert_from_path, convert_from_bytes
 
 
 def read_pdf_to_image(path: str, dpi: int = 300, box: tuple = (180, 280, 3000, 1600)):
@@ -10,6 +10,17 @@ def read_pdf_to_image(path: str, dpi: int = 300, box: tuple = (180, 280, 3000, 1
     img = convert_from_path(path, dpi=dpi)[0]  # assume reading first page
     img = img.crop(box=box)  # assume cropping with DPI=300
     return img
+
+
+def read_bytes_to_image(
+    pdf_bytes: bytes, dpi: int = 300, box: tuple = (180, 280, 3000, 1600)
+):
+    """
+    Convert PDF to image locally. Accept bytes / byte-like objects of a pdf file.
+    """
+    img = convert_from_bytes(pdf_bytes, dpi=dpi)[0]
+    img = img.crop(box=box)  # assume cropping with DPI=300
+    return
 
 
 def remove_grid(img_crop: np.array):

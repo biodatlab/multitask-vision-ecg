@@ -1,12 +1,22 @@
 # Backend
 
-FastAPI for backend prediction
+This folder contains small a library for processing ECG files
+and FastAPI for model prediction.
+
+## ECG utilities
+
+A package contains utility functions for prediction.
 
 ```py
-from ecg_utils import (
-    read_pdf_to_image,
-    load_learner_path
-)
-learner = load_learner_path("model.pkl")
-prediction = predict_ecg(learner, path)
+from ecg_utils import load_learner_path, predict_path
+learner = load_learner_path("models/model.pkl")
+prediction = predict_path(learner, path) # predict from a given path
+```
+
+## FastAPI backend
+
+Run the following script to start a FastAPI application.
+
+```py
+uvicorn api:app --reload
 ```

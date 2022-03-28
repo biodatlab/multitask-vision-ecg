@@ -53,7 +53,7 @@ const Dropzone = () => {
           py={12}
         >
           <input {...getInputProps()} />
-          <Text color="gray.600">
+          <Text color="gray.500">
             ลากไฟล์มาที่นี่หรือคลิกที่นี่เพื่อเลือกไฟล์ &nbsp;
             <Text
               as="span"

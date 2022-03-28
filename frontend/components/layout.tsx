@@ -24,7 +24,7 @@ const Layout = ({ children }: LayoutProps) => {
   // }, [user]);
 
   return (
-    <Flex h="100vh" flexDirection="column">
+    <Flex h="100vh" flexDirection="column" background="#fefefd">
       {/* <LoginModal isOpen={isOpenLoginModal} onClose={onCloseLoginModal} /> */}
       <Navbar
         // onClickLogin={onOpenLoginModal}

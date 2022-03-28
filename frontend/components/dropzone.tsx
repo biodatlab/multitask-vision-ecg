@@ -3,12 +3,14 @@ import {
   Button,
   CloseButton,
   Flex,
+  Icon,
   Image,
   Text,
   VStack,
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
+import { FaCloudUploadAlt } from "react-icons/fa";
 
 const Dropzone = () => {
   const [files, setFiles] = useState([] as any);
@@ -50,10 +52,12 @@ const Dropzone = () => {
           border={`2px solid ${isDragReject ? "red" : "pink"}`}
           borderRadius="md"
           borderStyle="dashed"
-          py={12}
+          py={6}
         >
           <input {...getInputProps()} />
           <Text color="gray.500">
+            <Icon as={FaCloudUploadAlt} w={14} h={14} />
+            <br />
             ลากไฟล์มาที่นี่หรือคลิกที่นี่เพื่อเลือกไฟล์ &nbsp;
             <Text
               as="span"

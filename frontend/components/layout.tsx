@@ -1,8 +1,9 @@
-import { Container, useDisclosure } from "@chakra-ui/react";
+import { Container, Flex, Spacer, useDisclosure } from "@chakra-ui/react";
 import { useEffect } from "react";
 // import { useAuthState } from "react-firebase-hooks/auth";
 // import LoginModal from "../components/loginModal";
 import Navbar from "../components/navbar";
+import Footer from "../components/footer";
 // import { auth, logOut } from "../utils/firebase/clientApp";
 
 interface LayoutProps {
@@ -23,7 +24,7 @@ const Layout = ({ children }: LayoutProps) => {
   // }, [user]);
 
   return (
-    <>
+    <Flex h="100vh" flexDirection="column">
       {/* <LoginModal isOpen={isOpenLoginModal} onClose={onCloseLoginModal} /> */}
       <Navbar
         // onClickLogin={onOpenLoginModal}
@@ -36,7 +37,9 @@ const Layout = ({ children }: LayoutProps) => {
         isLoggedIn={false}
       />
       <Container maxW="container.lg">{children}</Container>
-    </>
+      <Spacer />
+      <Footer />
+    </Flex>
   );
 };
 

@@ -7,6 +7,8 @@ import {
   Switch,
   Text,
   useDisclosure,
+  UnorderedList,
+  ListItem,
 } from "@chakra-ui/react";
 import { FaCaretUp } from "react-icons/fa";
 
@@ -31,7 +33,7 @@ const ValueBox = ({ title, labelLt, labelRt, value }: ValueBoxProps) => {
   const valueRt = renderOnSide === "right" ? renderValue : "0.00";
 
   return (
-    <Flex flex={1} flexDirection="column" alignItems="center" px={8} mb={8}>
+    <Flex flex={1} flexDirection="column" alignItems="center" px={8}>
       <Heading size="md" as="h3" color="gray.600" textAlign="center" mb={4}>
         {title}
       </Heading>
@@ -121,33 +123,47 @@ const Prediction = ({ normality, lvefgteq40, lveflw50 }: PredictionProps) => {
               e.currentTarget.checked ? onOpenPanel() : onClosePanel()
             }
           />
-          &nbsp; เปิด / ปิด ความน่าจะเป็น
+          &nbsp; เปิด / ปิด การทำนายผล
         </Box>
       </Flex>
       {isOpenPanel && (
-        <Stack
-          direction={{ base: "column", md: "row" }}
-          gap={{ base: 8, md: 2 }}
-        >
-          <ValueBox
-            title="แผลเป็น"
-            labelLt="ไม่มี"
-            labelRt="มี"
-            value={normality}
-          />
-          <ValueBox
-            title="LVEF < 40"
-            labelLt=">= 40"
-            labelRt="< 40"
-            value={lvefgteq40}
-          />
-          <ValueBox
-            title="LVEF < 50"
-            labelLt=">= 50"
-            labelRt="< 50"
-            value={lveflw50}
-          />
-        </Stack>
+        <>
+          <Stack
+            direction={{ base: "column", md: "row" }}
+            gap={{ base: 8, md: 2 }}
+          >
+            <ValueBox
+              title="แผลเป็น"
+              labelLt="ไม่มี"
+              labelRt="มี"
+              value={normality}
+            />
+            <ValueBox
+              title="LVEF < 40"
+              labelLt="&#8805; 40"
+              labelRt="< 40"
+              value={lvefgteq40}
+            />
+            <ValueBox
+              title="LVEF < 50"
+              labelLt="&#8805; 50"
+              labelRt="< 50"
+              value={lveflw50}
+            />
+          </Stack>
+          <Box textAlign="left" fontSize="sm">
+            <UnorderedList>
+              <ListItem>
+                ความเสี่ยงที่จะมีรอยแผลเป็นที่กล้อมเนื้อหัวใจ (Myocardial scar,
+                scar)
+              </ListItem>
+              <ListItem>
+                ค่าประสิทธิภาพการทำงานของหัวใจห้องล่างซ้าย (Left ventricular
+                ejection fraction, LVEF)
+              </ListItem>
+            </UnorderedList>
+          </Box>
+        </>
       )}
     </Stack>
   );

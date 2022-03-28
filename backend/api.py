@@ -1,7 +1,7 @@
 from ecg_utils import *
 from typing import Optional
 
-from fastapi import FastAPI, status
+from fastapi import FastAPI, status, File, UploadFile
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -21,6 +21,7 @@ app.add_middleware(
         "http://localhost",
         "http://localhost:4000",
         "http://localhost:9200",
+        "http://localhost:3000",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -29,21 +30,22 @@ app.add_middleware(
 
 
 @app.post("/api/predict")
-async def predict(payload: Optional[dict] = None):
+async def predict(file: UploadFile = File(...)):
     """
     Predict class from a given image bytes.
 
     payload: dict, dictionary with keys `image` with image bytes as value
         and `model` with model name as value (scar | lvef40 | lvef50).
     """
-    model_name = payload.get("model", None)
-    if payload is not None and MODELS.get(model_name) is not None:
-        image = read_bytes_to_image(payload["image"])
-        image = np.array(image)
-        pred = predict_array(MODELS[model_name], image)
-        return JSONResponse(status_code=status.HTTP_200_OK, content=pred)
-    else:
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"error": "Invalid request"},
-        )
+    return {"filename": file.filename, "file": file}
+    # model_name = payload.get("model", None)
+    # if payload is not None and MODELS.get(model_name) is not None:
+    #     image = read_bytes_to_image(payload["image"])
+    #     image = np.array(image)
+    #     pred = predict_array(MODELS[model_name], image)
+    #     return JSONResponse(status_code=status.HTTP_200_OK, content=pred)
+    # else:
+    #     return JSONResponse(
+    #         status_code=status.HTTP_400_BAD_REQUEST,
+    #         content={"error": "Invalid request"},
+    #     )

@@ -3,19 +3,18 @@ import {
   Flex,
   Heading,
   Icon,
+  ListItem,
   Stack,
   Switch,
   Text,
-  useDisclosure,
   UnorderedList,
-  ListItem,
+  useDisclosure,
 } from "@chakra-ui/react";
 import { FaCaretUp } from "react-icons/fa";
+import { predictionResult } from "../pages";
 
 interface PredictionProps {
-  normality: number;
-  lvefgteq40: number;
-  lveflw50: number;
+  predictionResult: predictionResult;
 }
 
 interface ValueBoxProps {
@@ -34,7 +33,7 @@ const ValueBox = ({ title, labelLt, labelRt, value }: ValueBoxProps) => {
 
   return (
     <Flex flex={1} flexDirection="column" alignItems="center" px={8}>
-      <Heading size="md" as="h3" color="gray.600" textAlign="center" mb={4}>
+      <Heading size="md" as="h3" textAlign="center" mb={4}>
         {title}
       </Heading>
       <Stack
@@ -105,18 +104,23 @@ const ValueBox = ({ title, labelLt, labelRt, value }: ValueBoxProps) => {
   );
 };
 
-const Prediction = ({ normality, lvefgteq40, lveflw50 }: PredictionProps) => {
+const Prediction = ({ predictionResult }: PredictionProps) => {
   const {
     isOpen: isOpenPanel,
     onClose: onClosePanel,
     onOpen: onOpenPanel,
-  } = useDisclosure();
+  } = useDisclosure({ defaultIsOpen: true });
+
+  if (!Array.isArray(predictionResult)) {
+    return null;
+  }
 
   return (
     <Stack direction="column" gap={4}>
       <Flex justifyContent="flex-end" alignItems="center">
         <Box>
           <Switch
+            defaultChecked
             size="md"
             colorScheme="pink"
             onChange={(e) =>
@@ -132,7 +136,18 @@ const Prediction = ({ normality, lvefgteq40, lveflw50 }: PredictionProps) => {
             direction={{ base: "column", md: "row" }}
             gap={{ base: 8, md: 2 }}
           >
-            <ValueBox
+            {predictionResult.map(
+              ({ prediction_title, score, labelLt, labelRt }) => (
+                <ValueBox
+                  key={`${prediction_title}-${score}`}
+                  title={prediction_title}
+                  labelLt={labelLt}
+                  labelRt={labelRt}
+                  value={score}
+                />
+              )
+            )}
+            {/* <ValueBox
               title="แผลเป็น"
               labelLt="ไม่มี"
               labelRt="มี"
@@ -148,8 +163,8 @@ const Prediction = ({ normality, lvefgteq40, lveflw50 }: PredictionProps) => {
               title="LVEF < 50"
               labelLt="&#8805; 50"
               labelRt="< 50"
-              value={lveflw50}
-            />
+              value={lvefgteq50}
+            /> */}
           </Stack>
           <Box textAlign="left" fontSize="sm">
             <UnorderedList>

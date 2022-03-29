@@ -20,7 +20,7 @@ def read_bytes_to_image(
     """
     img = convert_from_bytes(pdf_bytes, dpi=dpi)[0]
     img = img.crop(box=box)  # assume cropping with DPI=300
-    return
+    return img
 
 
 def remove_grid(img_crop: np.array):

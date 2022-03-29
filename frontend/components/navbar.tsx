@@ -43,7 +43,7 @@ const SIGN_IN_LABEL: string = "เข้าสู่ระบบ";
 const NAV_ITEMS: Array<NavItem> = [
   {
     label: "วิธีการใช้งาน",
-    href: "/manual",
+    href: "/instruction",
   },
   {
     label: "เกี่ยวกับเรา",

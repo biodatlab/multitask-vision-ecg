@@ -4,7 +4,7 @@ import Layout from "../components/layout";
 const About = () => {
   return (
     <Layout>
-      <Stack color="gray.600" direction="column" gap={2} py={6}>
+      <Stack direction="column" gap={2} py={6}>
         <Heading as="h1">เกี่ยวกับเรา</Heading>
         <Text>
           การใช้คลื่นไฟฟ้าหัวใจ (Electrocardiogram, ECG)

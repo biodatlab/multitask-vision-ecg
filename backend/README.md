@@ -3,6 +3,15 @@
 This folder contains small a library for processing ECG files
 and FastAPI for model prediction.
 
+## Requirements
+
+```sh
+pip install -r requirements.txt
+
+# for mac user, poppler need to be installed via conda
+conda install -c conda-forge poppler
+```
+
 ## ECG utilities
 
 A package contains utility functions for prediction.

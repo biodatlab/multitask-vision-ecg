@@ -3,22 +3,18 @@ import {
   Flex,
   Heading,
   Icon,
+  ListItem,
   Stack,
   Switch,
   Text,
-  useDisclosure,
   UnorderedList,
-  ListItem,
+  useDisclosure,
 } from "@chakra-ui/react";
 import { FaCaretUp } from "react-icons/fa";
+import { predictionResult } from "../pages";
 
 interface PredictionProps {
-  predictionResult: Array<{
-    prediction_title: string;
-    score: number;
-    labelLt: string;
-    labelRt: string;
-  }>;
+  predictionResult: predictionResult;
 }
 
 interface ValueBoxProps {
@@ -114,6 +110,10 @@ const Prediction = ({ predictionResult }: PredictionProps) => {
     onClose: onClosePanel,
     onOpen: onOpenPanel,
   } = useDisclosure({ defaultIsOpen: true });
+
+  if (!Array.isArray(predictionResult)) {
+    return null;
+  }
 
   return (
     <Stack direction="column" gap={4}>

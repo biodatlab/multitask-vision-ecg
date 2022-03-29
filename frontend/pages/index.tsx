@@ -1,12 +1,30 @@
+import {
+  Alert,
+  AlertDescription,
+  AlertIcon,
+  AlertTitle,
+  Divider,
+  Heading,
+  Stack,
+  Text,
+} from "@chakra-ui/react";
 import type { NextPage } from "next";
-import Layout from "../components/layout";
-import Dropzone from "../components/dropzone";
-import { Divider, Heading, Stack, Text } from "@chakra-ui/react";
-import Prediction from "../components/prediction";
 import { useState } from "react";
+import Dropzone from "../components/dropzone";
+import Layout from "../components/layout";
+import Prediction from "../components/prediction";
+
+interface prediction {
+  prediction_title: string;
+  score: number;
+  labelLt: string;
+  labelRt: string;
+}
+
+export type predictionResult = Array<prediction> | { error: string } | null;
 
 const Home: NextPage = () => {
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState(null as predictionResult);
   const [isLoadingResult, setIsLoadingResult] = useState(false);
 
   return (
@@ -51,10 +69,33 @@ const Home: NextPage = () => {
           }}
           isLoading={isLoadingResult}
         />
-        {result && (
+        {Array.isArray(result) && (
           <>
             <Divider />
             <Prediction predictionResult={result} />
+          </>
+        )}
+        {result && !Array.isArray(result) && (
+          <>
+            <Divider />
+            <Alert
+              status="error"
+              variant="subtle"
+              flexDirection="column"
+              alignItems="center"
+              justifyContent="center"
+              textAlign="center"
+              height="200px"
+            >
+              <AlertIcon boxSize="40px" mr={0} />
+              <AlertTitle mt={4} mb={1} fontSize="lg">
+                ไม่สามารถทำนายได้
+              </AlertTitle>
+              <AlertDescription maxWidth="sm">
+                อาจมีข้อผิดพลาดเกี่ยวกับรูปภาพหรือไฟล์ที่ส่งมา
+                กรุณาลองใหม่อีกครั้งหรือติดต่อเรา
+              </AlertDescription>
+            </Alert>
           </>
         )}
       </Stack>

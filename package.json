@@ -1,0 +1,13 @@
+{
+  "scripts": {
+    "install-root": "npm install",
+    "install-fe": "cd frontend && npm install",
+    "setup": "concurrently -c \"green,cyan\" \"npm:install-*\"",
+    "run-fe": "cd frontend && npm run dev",
+    "run-be": "cd backend && uvicorn api:app --reload",
+    "demo": "concurrently -c \"blue,yellow\" \"npm:run-*\""
+  },
+  "dependencies": {
+    "concurrently": "^7.0.0"
+  }
+}

@@ -18,6 +18,7 @@ A package contains utility functions for prediction.
 
 ```py
 from ecg_utils import load_learner_path, predict_path
+
 learner = load_learner_path("models/model.pkl")
 prediction = predict_path(learner, path) # predict from a given path
 ```

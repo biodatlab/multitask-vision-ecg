@@ -4,22 +4,47 @@ Classifying 12 lead Electrocardiogram (EKG) using Convolutional Neural Network (
 We train deep neural network (CNN) to classify image for 12-leads ECG scan.
 Data are provided from Siriraj Hospital, Thailand.
 
-## Running web application
+## Requirements
 
-The repository contains `frontend` and `backend` folders. Run both folders separately to
-serve an application.
+- Python (preferred Conda) >= 3.7
+- NodeJS >= 14.x.x
+
+For convenience, installing runner for the project and dependencies for the frontend is included in a single command:
+
+```sh
+npm run setup
+```
+
+But you will still need to install the dependencies for the backend separately:
+
+```sh
+cd backend
+pip install -r requirements.txt
+
+# for mac user, poppler need to be installed via conda
+conda install -c conda-forge poppler
+```
+
+## Running the project
+
+The repository contains `frontend` and `backend` applications. You can run this command in the root of the project to serve both applications at once:
+
+```sh
+npm run demo
+```
+
+You can run each application separately if you want:
 
 ### Frontend
 
 ```sh
-npm install
+cd frontend
+npm run dev
 ```
 
 ### Backend
 
-Install Python dependencies and run FastAPI as follows
-
 ```sh
-pip install -r requirements.txt
+cd backend
 uvicorn api:app --reload
 ```

@@ -49,6 +49,10 @@ const NAV_ITEMS: Array<NavItem> = [
     label: "เกี่ยวกับเรา",
     href: "/about",
   },
+  {
+    label: "แบบประเมินความเสี่ยง",
+    href: "/assessment",
+  },
 ];
 
 export default function WithSubnavigation({

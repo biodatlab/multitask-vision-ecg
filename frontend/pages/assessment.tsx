@@ -129,7 +129,10 @@ const questions: Array<Question> = [
   },
 ];
 
-const calculate = (answers: Answers): number | null => {
+const calculate = (
+  answers: Answers,
+  onInvalid: (invalidFields: Array<string>) => void
+): number | null => {
   const {
     age,
     sex,
@@ -143,8 +146,6 @@ const calculate = (answers: Answers): number | null => {
     lvef,
   } = answers;
 
-  console.log({ answers });
-
   if (
     age === undefined ||
     sex === undefined ||
@@ -156,6 +157,16 @@ const calculate = (answers: Answers): number | null => {
     smoking === undefined ||
     renal_replacement === undefined
   ) {
+    const requiredFields = questions
+      .map((x) => x.key)
+      .filter((x) => x !== "lvef");
+
+    const invalidFields = requiredFields.filter((k) => {
+      return answers[k] === undefined;
+    });
+
+    onInvalid(invalidFields);
+
     return null;
   }
 
@@ -194,6 +205,7 @@ const calculate = (answers: Answers): number | null => {
 
 const Manual = () => {
   const [answers, setAnswers] = useState({} as Answers);
+  const [invalidFields, setInvalidFields] = useState([] as Array<string>);
 
   // With LVEF available:
   // prognostic_index = (0.025 * age) + (0.563 * female) + (0.772 * history_heart_failure) + (0.463 * history_cad) + (0.413 * implantable) + (0.732  * diabetes) + (0.356 * hypertension) + (0.523 * smoking) + (1.516 * renal_replacement) - (0.021 * lvef)
@@ -221,29 +233,31 @@ const Manual = () => {
                     </Tr>
                   </Thead>
                   <Tbody>
-                    {questions.map((question, ind) => (
-                      <Tr key={question.text}>
-                        <Td
-                        // border={
-                        //   ind === questions.length - 1 ? "none" : undefined
-                        // }
-                        >
-                          {question.text}
-                        </Td>
-                        <Td
-                        // border={
-                        //   ind === questions.length - 1 ? "none" : undefined
-                        // }
-                        >
+                    {questions.map((question) => (
+                      <Tr
+                        key={question.text}
+                        background={
+                          invalidFields.includes(question.key)
+                            ? "red.100"
+                            : undefined
+                        }
+                      >
+                        <Td>{question.text}</Td>
+                        <Td>
                           {question.type === "radio" ? (
                             <RadioGroup
+                              name={question.key}
                               onChange={(val) => {
                                 setAnswers((prev) => ({
                                   ...prev,
-                                  [question.key]: Number(val),
+                                  [question.key]: val,
                                 }));
+                                // remove from invalid fields
+                                setInvalidFields((prev) =>
+                                  prev.filter((x) => x !== question.key)
+                                );
                               }}
-                              value={answers[question.key] || undefined}
+                              value={answers[question.key]}
                             >
                               <Stack direction="row">
                                 {question.choices.map((choice, ind) => (
@@ -251,6 +265,9 @@ const Manual = () => {
                                     key={choice}
                                     value={String(ind)}
                                     isRequired={!question.optional}
+                                    isInvalid={invalidFields.includes(
+                                      question.key
+                                    )}
                                   >
                                     {choice}
                                   </Radio>
@@ -261,13 +278,19 @@ const Manual = () => {
                             <Input
                               size="sm"
                               type="number"
+                              value={answers[question.key] || ""}
+                              isRequired={!question.optional}
+                              isInvalid={invalidFields.includes(question.key)}
                               onChange={(e) => {
                                 setAnswers((prev) => ({
                                   ...prev,
                                   [question.key]: Number(e.target.value),
                                 }));
+                                // remove from invalid fields
+                                setInvalidFields((prev) =>
+                                  prev.filter((x) => x !== question.key)
+                                );
                               }}
-                              value={answers[question.key] || ""}
                             />
                           )}
                         </Td>
@@ -276,10 +299,25 @@ const Manual = () => {
                   </Tbody>
                 </Table>
               </TableContainer>
+              {invalidFields.length > 0 && (
+                <Box mt={4}>
+                  <Text fontWeight="bold" color="red.500">
+                    กรุณาเลือก{" "}
+                    {invalidFields
+                      .map(
+                        (x) => `"${questions.find((y) => y.key === x)?.text}"`
+                      )
+                      .join(", ")}
+                  </Text>
+                </Box>
+              )}
             </Container>
+
             <Button
               onClick={() => {
-                const pred = calculate(answers);
+                const pred = calculate(answers, (invalidFields) => {
+                  setInvalidFields(invalidFields);
+                });
 
                 console.log({ pred });
               }}
@@ -288,6 +326,7 @@ const Manual = () => {
             >
               คำนวณ
             </Button>
+
             <Box w="100%" p={10} textAlign="center">
               <Text fontSize="3xl" fontWeight="bold">
                 15%

@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  Code,
   Container,
   Flex,
   Heading,
@@ -101,7 +102,7 @@ const questions: Array<Question> = [
   },
   {
     key: "hypertension",
-    text: "ความดันสูง",
+    text: "เป็นโรคความดันสูง",
     type: "radio",
     optional: false,
     choices: ["ไม่ใช่", "ใช่"],
@@ -206,14 +207,7 @@ const calculate = (
 const Manual = () => {
   const [answers, setAnswers] = useState({} as Answers);
   const [invalidFields, setInvalidFields] = useState([] as Array<string>);
-
-  // With LVEF available:
-  // prognostic_index = (0.025 * age) + (0.563 * female) + (0.772 * history_heart_failure) + (0.463 * history_cad) + (0.413 * implantable) + (0.732  * diabetes) + (0.356 * hypertension) + (0.523 * smoking) + (1.516 * renal_replacement) - (0.021 * lvef)
-  // prediction = 1 - 0.98801461 ** (exp(prognostic_index))
-
-  // Without LVEF:
-  // prognostic_index = (0.020 * age) + (0.452 * female) + (1.019 * history_heart_failure) + (0.579 * history_cad) + (0.453 * implantable) + (0.704  * diabetes) + (0.297 * hypertension) + (0.506 * smoking) + (1.508 * renal_replacement)
-  // prediction = 1 - 0.99535167 ** (exp(prognostic_index))
+  const [displayFormula, setDisplayFormula] = useState(false);
 
   return (
     <Layout>
@@ -224,7 +218,10 @@ const Manual = () => {
         <Flex justifyContent="center">
           <VStack gap={4}>
             <Container maxW="container.md" centerContent>
-              <TableContainer>
+              <TableContainer
+                overflowX="auto"
+                whiteSpace={{ base: "normal", md: "nowrap" }}
+              >
                 <Table variant="simple">
                   <Thead>
                     <Tr>
@@ -327,15 +324,86 @@ const Manual = () => {
               คำนวณ
             </Button>
 
-            <Box w="100%" p={10} textAlign="center">
+            <Box maxW="100%" p={4} textAlign="center">
               <Text fontSize="3xl" fontWeight="bold">
                 15%
               </Text>
               <Text fontSize="xl">ความเสี่ยงสูงมาก</Text>
               <Bar value={20} min={0} max={100} />
-              <Button variant="ghost" colorScheme="pink">
+              <Button
+                variant="ghost"
+                colorScheme="pink"
+                onClick={() => setDisplayFormula((prev) => !prev)}
+              >
                 ดูสูตรคำนวณความเสี่ยง
               </Button>
+            </Box>
+
+            <Box
+              borderRadius={8}
+              background="pink.50"
+              p={8}
+              pb={6}
+              display={displayFormula ? "block" : "none"}
+            >
+              <Text>
+                <Heading as="h3" fontSize="lg">
+                  เมื่อมีค่าประสิทธิภาพหัวใจห้องล่างซ้าย (LVEF)
+                </Heading>
+                <Code border="2px solid pink" borderRadius={8} p={4} mb={4}>
+                  <Stack direction="column" gap={4}>
+                    <Stack direction="row">
+                      <Box w="135px" textAlign="right">
+                        prognostic_index
+                      </Box>
+                      <Box>=</Box>
+                      <Box>
+                        (0.025 * อายุ) + (0.563 * เพศ) + (0.772 *
+                        ประวัติโรคหัวใจล้มเหลว) + (0.463 *
+                        ประวัติโรคกล้ามเนื้อหัวใจขาดเลือด) + (0.413 *
+                        อุปกรณ์ฝังช่วย) + (0.732 * โรคเบาหวาน) + (0.356 *
+                        โรคความดันสูง) + (0.523 * สูบบุหรี่) + (1.516 *
+                        เคยฟอกไต) - (0.021 * ค่าประสิทธิภาพหัวใจห้องล่างซ้าย)
+                      </Box>
+                    </Stack>
+                    <Stack direction="row">
+                      <Box w="135px" textAlign="right">
+                        ความเสี่ยง
+                      </Box>
+                      <Box>=</Box>
+                      <Box>1 - 0.98801461 ** (exp(prognostic_index))</Box>
+                    </Stack>
+                  </Stack>
+                </Code>
+                <Heading as="h3" fontSize="lg">
+                  เมื่อไม่มีค่าประสิทธิภาพหัวใจห้องล่างซ้าย (No LVEF)
+                </Heading>
+                <Code border="2px solid pink" borderRadius={8} p={4} mb={4}>
+                  <Stack direction="column" gap={4}>
+                    <Stack direction="row">
+                      <Box w="135px" textAlign="right">
+                        prognostic_index
+                      </Box>
+                      <Box>=</Box>
+                      <Box>
+                        (0.020 * อายุ) + (0.452 * เพศ) + (1.019 *
+                        ประวัติโรคหัวใจล้มเหลว) + (0.579*
+                        ประวัติโรคกล้ามเนื้อหัวใจขาดเลือด) + (0.453 *
+                        อุปกรณ์ฝังช่วย) + (0.704 * โรคเบาหวาน) + (0.297 *
+                        โรคความดันสูง) + (0.506 * สูบบุหรี่) + (1.508 *
+                        เคยฟอกไต)
+                      </Box>
+                    </Stack>
+                    <Stack direction="row">
+                      <Box w="135px" textAlign="right">
+                        ความเสี่ยง
+                      </Box>
+                      <Box>=</Box>
+                      <Box>1 - 0.99535167 ** (exp(prognostic_index))</Box>
+                    </Stack>
+                  </Stack>
+                </Code>
+              </Text>
             </Box>
           </VStack>
         </Flex>

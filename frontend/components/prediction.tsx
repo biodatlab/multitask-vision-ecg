@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   Flex,
   Heading,
   Icon,
@@ -15,6 +16,7 @@ import { predictionResult } from "../pages";
 
 interface PredictionProps {
   predictionResult: predictionResult;
+  onClickHowTo: () => void;
 }
 
 interface ValueBoxProps {
@@ -104,7 +106,7 @@ const ValueBox = ({ title, labelLt, labelRt, value }: ValueBoxProps) => {
   );
 };
 
-const Prediction = ({ predictionResult }: PredictionProps) => {
+const Prediction = ({ predictionResult, onClickHowTo }: PredictionProps) => {
   const {
     isOpen: isOpenPanel,
     onClose: onClosePanel,
@@ -147,24 +149,6 @@ const Prediction = ({ predictionResult }: PredictionProps) => {
                 />
               )
             )}
-            {/* <ValueBox
-              title="แผลเป็น"
-              labelLt="ไม่มี"
-              labelRt="มี"
-              value={normality}
-            />
-            <ValueBox
-              title="LVEF < 40"
-              labelLt="&#8805; 40"
-              labelRt="< 40"
-              value={lvefgteq40}
-            />
-            <ValueBox
-              title="LVEF < 50"
-              labelLt="&#8805; 50"
-              labelRt="< 50"
-              value={lvefgteq50}
-            /> */}
           </Stack>
           <Box textAlign="left" fontSize="sm">
             <UnorderedList>
@@ -175,6 +159,16 @@ const Prediction = ({ predictionResult }: PredictionProps) => {
               <ListItem>
                 ค่าประสิทธิภาพการทำงานของหัวใจห้องล่างซ้าย (Left ventricular
                 ejection fraction, LVEF)
+              </ListItem>
+              <ListItem>
+                <Button
+                  colorScheme="pink"
+                  variant="link"
+                  onClick={onClickHowTo}
+                  size="sm"
+                >
+                  ดูวิธีการสร้างโมเดล
+                </Button>
               </ListItem>
             </UnorderedList>
           </Box>

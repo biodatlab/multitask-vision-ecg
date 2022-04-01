@@ -230,203 +230,189 @@ const Manual = () => {
         <Heading as="h1">
           แบบประเมินความเสี่ยงโรคหัวใจล้มเหลวภายในระยะเวลา 3 ปี
         </Heading>
-        <Flex justifyContent="center">
-          <VStack gap={4}>
-            <Container maxW="container.md" centerContent>
-              <TableContainer
-                overflowX="auto"
-                whiteSpace={{ base: "normal", md: "nowrap" }}
-              >
-                <Table variant="simple">
-                  <Thead>
-                    <Tr>
-                      <Th>คำถาม</Th>
-                      <Th>คำตอบ</Th>
-                    </Tr>
-                  </Thead>
-                  <Tbody>
-                    {questions.map((question) => (
-                      <Tr
-                        key={question.text}
-                        background={
-                          invalidFields.includes(question.key)
-                            ? "red.100"
-                            : undefined
-                        }
-                      >
-                        <Td>{question.text}</Td>
-                        <Td>
-                          {question.type === "radio" ? (
-                            <RadioGroup
-                              name={question.key}
-                              onChange={(val) => {
-                                setAnswers((prev) => ({
-                                  ...prev,
-                                  [question.key]: val,
-                                }));
-                                // remove from invalid fields
-                                setInvalidFields((prev) =>
-                                  prev.filter((x) => x !== question.key)
-                                );
-                              }}
-                              value={answers[question.key]}
-                            >
-                              <Stack direction="row">
-                                {question.choices.map((choice, ind) => (
-                                  <Radio
-                                    key={choice}
-                                    value={String(ind)}
-                                    isRequired={!question.optional}
-                                    isInvalid={invalidFields.includes(
-                                      question.key
-                                    )}
-                                  >
-                                    {choice}
-                                  </Radio>
-                                ))}
-                              </Stack>
-                            </RadioGroup>
-                          ) : (
-                            <Input
-                              size="sm"
-                              type="number"
-                              value={answers[question.key] || ""}
-                              isRequired={!question.optional}
-                              isInvalid={invalidFields.includes(question.key)}
-                              onChange={(e) => {
-                                setAnswers((prev) => ({
-                                  ...prev,
-                                  [question.key]: Number(e.target.value),
-                                }));
-                                // remove from invalid fields
-                                setInvalidFields((prev) =>
-                                  prev.filter((x) => x !== question.key)
-                                );
-                              }}
-                            />
-                          )}
-                        </Td>
-                      </Tr>
-                    ))}
-                  </Tbody>
-                </Table>
-              </TableContainer>
-              {invalidFields.length > 0 && (
-                <Box mt={4}>
-                  <Text fontWeight="bold" color="red.500">
-                    กรุณาเลือก{" "}
-                    {invalidFields
-                      .map(
-                        (x) => `"${questions.find((y) => y.key === x)?.text}"`
-                      )
-                      .join(", ")}
-                  </Text>
-                </Box>
-              )}
-            </Container>
+        <VStack gap={4}>
+          <TableContainer>
+            <Table variant="simple">
+              <Thead>
+                <Tr>
+                  <Th>คำถาม</Th>
+                  <Th>คำตอบ</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {questions.map((question) => (
+                  <Tr
+                    key={question.text}
+                    background={
+                      invalidFields.includes(question.key)
+                        ? "red.100"
+                        : undefined
+                    }
+                  >
+                    <Td>{question.text}</Td>
+                    <Td>
+                      {question.type === "radio" ? (
+                        <RadioGroup
+                          name={question.key}
+                          onChange={(val) => {
+                            setAnswers((prev) => ({
+                              ...prev,
+                              [question.key]: val,
+                            }));
+                            // remove from invalid fields
+                            setInvalidFields((prev) =>
+                              prev.filter((x) => x !== question.key)
+                            );
+                          }}
+                          value={answers[question.key]}
+                        >
+                          <Stack direction="row">
+                            {question.choices.map((choice, ind) => (
+                              <Radio
+                                key={choice}
+                                value={String(ind)}
+                                isRequired={!question.optional}
+                                isInvalid={invalidFields.includes(question.key)}
+                              >
+                                {choice}
+                              </Radio>
+                            ))}
+                          </Stack>
+                        </RadioGroup>
+                      ) : (
+                        <Input
+                          size="sm"
+                          type="number"
+                          value={answers[question.key] || ""}
+                          isRequired={!question.optional}
+                          isInvalid={invalidFields.includes(question.key)}
+                          onChange={(e) => {
+                            setAnswers((prev) => ({
+                              ...prev,
+                              [question.key]: Number(e.target.value),
+                            }));
+                            // remove from invalid fields
+                            setInvalidFields((prev) =>
+                              prev.filter((x) => x !== question.key)
+                            );
+                          }}
+                        />
+                      )}
+                    </Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+          </TableContainer>
+          {invalidFields.length > 0 && (
+            <Box mt={4}>
+              <Text fontWeight="bold" color="red.500">
+                กรุณาเลือก{" "}
+                {invalidFields
+                  .map((x) => `"${questions.find((y) => y.key === x)?.text}"`)
+                  .join(", ")}
+              </Text>
+            </Box>
+          )}
 
+          <Button
+            onClick={() => {
+              const pred = calculate(answers, (invalidFields) => {
+                setInvalidFields(invalidFields);
+              });
+
+              setPrediction(pred);
+            }}
+            colorScheme="pink"
+            px={6}
+          >
+            คำนวณ
+          </Button>
+
+          <Box
+            maxW="100%"
+            p={4}
+            textAlign="center"
+            display={prediction ? "block" : "none"}
+          >
+            <Text fontSize="3xl" fontWeight="bold">
+              {`${prediction?.toFixed(0)}%`}
+            </Text>
+            <Text fontSize="xl">{getRiskLabel(prediction!)}</Text>
+            <Bar value={prediction!} min={0} max={12} />
             <Button
-              onClick={() => {
-                const pred = calculate(answers, (invalidFields) => {
-                  setInvalidFields(invalidFields);
-                });
-
-                setPrediction(pred);
-              }}
+              variant="ghost"
               colorScheme="pink"
-              px={6}
+              onClick={() => setDisplayFormula((prev) => !prev)}
             >
-              คำนวณ
+              ดูสูตรคำนวณความเสี่ยง
             </Button>
+          </Box>
 
-            <Box
-              maxW="100%"
-              p={4}
-              textAlign="center"
-              display={prediction ? "block" : "none"}
-            >
-              <Text fontSize="3xl" fontWeight="bold">
-                {`${prediction?.toFixed(0)}%`}
-              </Text>
-              <Text fontSize="xl">{getRiskLabel(prediction!)}</Text>
-              <Bar value={prediction!} min={0} max={12} />
-              <Button
-                variant="ghost"
-                colorScheme="pink"
-                onClick={() => setDisplayFormula((prev) => !prev)}
-              >
-                ดูสูตรคำนวณความเสี่ยง
-              </Button>
-            </Box>
-
-            <Box
-              borderRadius={8}
-              background="pink.50"
-              p={8}
-              pb={6}
-              display={displayFormula ? "block" : "none"}
-            >
-              <Text>
-                <Heading as="h3" fontSize="lg">
-                  เมื่อมีค่าประสิทธิภาพหัวใจห้องล่างซ้าย (LVEF)
-                </Heading>
-                <Code border="2px solid pink" borderRadius={8} p={4} mb={4}>
-                  <Stack direction="column" gap={4}>
-                    <Stack direction="row">
-                      <Box w="135px" textAlign="right">
-                        prognostic_index
-                      </Box>
-                      <Box>=</Box>
-                      <Box>
-                        (0.025 * อายุ) + (0.563 * เพศ) + (0.772 *
-                        ประวัติโรคหัวใจล้มเหลว) + (0.463 *
-                        ประวัติโรคกล้ามเนื้อหัวใจขาดเลือด) + (0.413 *
-                        อุปกรณ์ฝังช่วย) + (0.732 * โรคเบาหวาน) + (0.356 *
-                        โรคความดันสูง) + (0.523 * สูบบุหรี่) + (1.516 *
-                        เคยฟอกไต) - (0.021 * ค่าประสิทธิภาพหัวใจห้องล่างซ้าย)
-                      </Box>
-                    </Stack>
-                    <Stack direction="row">
-                      <Box w="135px" textAlign="right">
-                        ความเสี่ยง
-                      </Box>
-                      <Box>=</Box>
-                      <Box>1 - 0.98801461 ** (exp(prognostic_index))</Box>
-                    </Stack>
-                  </Stack>
-                </Code>
-                <Heading as="h3" fontSize="lg">
-                  เมื่อไม่มีค่าประสิทธิภาพหัวใจห้องล่างซ้าย (No LVEF)
-                </Heading>
-                <Code border="2px solid pink" borderRadius={8} p={4} mb={4}>
-                  <Stack direction="column" gap={4}>
-                    <Stack direction="row">
-                      <Box w="135px" textAlign="right">
-                        prognostic_index
-                      </Box>
-                      <Box>=</Box>
-                      <Box>
-                        (0.020 * อายุ) + (0.452 * เพศ) + (1.019 *
-                        ประวัติโรคหัวใจล้มเหลว) + (0.579*
-                        ประวัติโรคกล้ามเนื้อหัวใจขาดเลือด) + (0.453 *
-                        อุปกรณ์ฝังช่วย) + (0.704 * โรคเบาหวาน) + (0.297 *
-                        โรคความดันสูง) + (0.506 * สูบบุหรี่) + (1.508 *
-                        เคยฟอกไต)
-                      </Box>
-                    </Stack>
-                    <Stack direction="row">
-                      <Box w="135px" textAlign="right">
-                        ความเสี่ยง
-                      </Box>
-                      <Box>=</Box>
-                      <Box>1 - 0.99535167 ** (exp(prognostic_index))</Box>
-                    </Stack>
-                  </Stack>
-                </Code>
-              </Text>
-            </Box>
-          </VStack>
-        </Flex>
+          <Box
+            borderRadius={8}
+            background="pink.50"
+            p={8}
+            pb={6}
+            display={displayFormula ? "block" : "none"}
+          >
+            <Heading as="h3" fontSize="lg">
+              เมื่อมีค่าประสิทธิภาพหัวใจห้องล่างซ้าย (LVEF)
+            </Heading>
+            <Code border="2px solid pink" borderRadius={8} p={4} mb={4}>
+              <Stack direction="column" gap={4}>
+                <Stack direction="row">
+                  <Box w="135px" textAlign="right">
+                    prognostic_index
+                  </Box>
+                  <Box>=</Box>
+                  <Box>
+                    (0.025 * อายุ) + (0.563 * เพศ) + (0.772 *
+                    ประวัติโรคหัวใจล้มเหลว) + (0.463 *
+                    ประวัติโรคกล้ามเนื้อหัวใจขาดเลือด) + (0.413 *
+                    อุปกรณ์ฝังช่วย) + (0.732 * โรคเบาหวาน) + (0.356 *
+                    โรคความดันสูง) + (0.523 * สูบบุหรี่) + (1.516 * เคยฟอกไต) -
+                    (0.021 * ค่าประสิทธิภาพหัวใจห้องล่างซ้าย)
+                  </Box>
+                </Stack>
+                <Stack direction="row">
+                  <Box w="135px" textAlign="right">
+                    ความเสี่ยง
+                  </Box>
+                  <Box>=</Box>
+                  <Box>1 - 0.98801461 ** (exp(prognostic_index))</Box>
+                </Stack>
+              </Stack>
+            </Code>
+            <Heading as="h3" fontSize="lg">
+              เมื่อไม่มีค่าประสิทธิภาพหัวใจห้องล่างซ้าย (No LVEF)
+            </Heading>
+            <Code border="2px solid pink" borderRadius={8} p={4} mb={4}>
+              <Stack direction="column" gap={4}>
+                <Stack direction="row">
+                  <Box w="135px" textAlign="right">
+                    prognostic_index
+                  </Box>
+                  <Box>=</Box>
+                  <Box>
+                    (0.020 * อายุ) + (0.452 * เพศ) + (1.019 *
+                    ประวัติโรคหัวใจล้มเหลว) + (0.579*
+                    ประวัติโรคกล้ามเนื้อหัวใจขาดเลือด) + (0.453 *
+                    อุปกรณ์ฝังช่วย) + (0.704 * โรคเบาหวาน) + (0.297 *
+                    โรคความดันสูง) + (0.506 * สูบบุหรี่) + (1.508 * เคยฟอกไต)
+                  </Box>
+                </Stack>
+                <Stack direction="row">
+                  <Box w="135px" textAlign="right">
+                    ความเสี่ยง
+                  </Box>
+                  <Box>=</Box>
+                  <Box>1 - 0.99535167 ** (exp(prognostic_index))</Box>
+                </Stack>
+              </Stack>
+            </Code>
+          </Box>
+        </VStack>
       </Stack>
     </Layout>
   );

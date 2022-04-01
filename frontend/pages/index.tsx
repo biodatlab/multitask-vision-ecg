@@ -58,7 +58,8 @@ const Home: NextPage = () => {
           </Button>{" "}
           จะทำนายความน่าจะเป็นของการมีรอยแผลเป็นในหัวใจ (Myocardial scar)
           และค่าประสิทธิภาพการทำงานของหัวใจห้องล่างซ้าย (Left ventricular
-          ejection fraction, LVEF)
+          ejection fraction, LVEF) นอกจากนั้นผู้ใช้งานยังสามารถทำแบบสอบถาม
+          เพื่อประเมินความเสี่ยงเกี่ยวกับโรคหัวใจผ่านแอพพลิเคชั่นได้อีกด้วย
         </Text>
         <Dropzone
           onClearFile={() => setResult(null)}

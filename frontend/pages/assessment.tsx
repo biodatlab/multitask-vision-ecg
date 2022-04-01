@@ -10,12 +10,10 @@ import {
   RadioGroup,
   Stack,
   Table,
-  TableCaption,
   TableContainer,
   Tbody,
   Td,
   Text,
-  Tfoot,
   Th,
   Thead,
   Tr,
@@ -130,6 +128,22 @@ const questions: Array<Question> = [
   },
 ];
 
+const getRiskLabel = (percent: number) => {
+  if (percent < 3) {
+    return "ความเสี่ยงต่ำ";
+  }
+
+  if (percent >= 3 && percent < 5) {
+    return "ความเสี่ยงปานกลาง";
+  }
+
+  if (percent >= 5 && percent < 10) {
+    return "ความเสี่ยงสูง";
+  }
+
+  return "ความเสี่ยงสูงมาก";
+};
+
 const calculate = (
   answers: Answers,
   onInvalid: (invalidFields: Array<string>) => void
@@ -208,6 +222,7 @@ const Manual = () => {
   const [answers, setAnswers] = useState({} as Answers);
   const [invalidFields, setInvalidFields] = useState([] as Array<string>);
   const [displayFormula, setDisplayFormula] = useState(false);
+  const [prediction, setPrediction] = useState(null as number | null);
 
   return (
     <Layout>
@@ -316,7 +331,7 @@ const Manual = () => {
                   setInvalidFields(invalidFields);
                 });
 
-                console.log({ pred });
+                setPrediction(pred);
               }}
               colorScheme="pink"
               px={6}
@@ -324,12 +339,17 @@ const Manual = () => {
               คำนวณ
             </Button>
 
-            <Box maxW="100%" p={4} textAlign="center">
+            <Box
+              maxW="100%"
+              p={4}
+              textAlign="center"
+              display={prediction ? "block" : "none"}
+            >
               <Text fontSize="3xl" fontWeight="bold">
-                15%
+                {`${prediction?.toFixed(0)}%`}
               </Text>
-              <Text fontSize="xl">ความเสี่ยงสูงมาก</Text>
-              <Bar value={20} min={0} max={100} />
+              <Text fontSize="xl">{getRiskLabel(prediction!)}</Text>
+              <Bar value={prediction!} min={0} max={12} />
               <Button
                 variant="ghost"
                 colorScheme="pink"

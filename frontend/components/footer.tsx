@@ -1,6 +1,9 @@
 import { Box, Button, Container, Text } from "@chakra-ui/react";
+import { useRouter } from "next/router";
 
 const Footer = () => {
+  const router = useRouter();
+
   return (
     <Box w="100%" p={4} bg="pink.100">
       <Container textAlign="center">
@@ -9,7 +12,14 @@ const Footer = () => {
           <br />
           และ ภาควิชาวิศวกรรมชีวการแพทย์ คณะวิศวกรรมศาสตร์ มหาวิทยาลัยมหิดล
         </Text>
-        <Button variant="link" colorScheme="pink" fontSize="sm">
+        <Button
+          variant="link"
+          colorScheme="pink"
+          fontSize="sm"
+          onClick={() => {
+            router.push("/privacy-policy");
+          }}
+        >
           นโยบายความเป็นส่วนตัว
         </Button>
       </Container>

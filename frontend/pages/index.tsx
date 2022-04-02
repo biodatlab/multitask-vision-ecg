@@ -63,8 +63,11 @@ const Home: NextPage = () => {
         </Text>
         <Divider />
         <Heading as="h2" size="md">
-          ประเมินความเสี่ยงจากภาพสแกนคลื่นไฟฟ้าหัวใจ
+          ประเมินความเสี่ยงจากภาพสแกนคลื่นไฟฟ้าหัวใจแบบ 12 ลีด
         </Heading>
+        <Text textAlign="center">
+          อัพโหลดไฟล์สแกนคลื่นไฟฟ้าหัวใจแบบ 12 ลีดในกล่องด้านล่างเพื่อทำนายผล
+        </Text>
         <Dropzone
           onClearFile={() => setResult(null)}
           onSubmit={(f) => {

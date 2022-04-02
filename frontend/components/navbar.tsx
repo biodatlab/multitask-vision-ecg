@@ -7,6 +7,7 @@ import {
   Flex,
   Icon,
   IconButton,
+  Image,
   Link,
   Menu,
   MenuButton,
@@ -101,7 +102,13 @@ export default function WithSubnavigation({
         <Flex flex={{ base: 1 }} justify={{ base: "center", md: "start" }}>
           <NextLink href="/" passHref>
             <Link _hover={{ textDecorationStyle: "none" }}>
-              <Text
+              <Image
+                src="/hatai-ai-logo.svg"
+                title="หทัย AI"
+                alt="หทัย AI"
+                height={8}
+              />
+              {/* <Text
                 as="b"
                 fontSize={{ base: "2xl", md: "3xl" }}
                 textAlign={useBreakpointValue({ base: "center", md: "left" })}
@@ -109,7 +116,7 @@ export default function WithSubnavigation({
                 color="pink.400"
               >
                 {BRAND}
-              </Text>
+              </Text> */}
             </Link>
           </NextLink>
 

@@ -40,7 +40,7 @@ const Home: NextPage = () => {
     <Layout>
       <Stack py={6} direction="column" textAlign={"center"} gap={2}>
         <Heading color="gray.500" as={"h1"}>
-          12-lead ECG Classification
+          หทัย AI
         </Heading>
         <Text textAlign="left">
           <Text as="span" fontWeight="bold">
@@ -61,6 +61,10 @@ const Home: NextPage = () => {
           ejection fraction, LVEF) นอกจากนั้นผู้ใช้งานยังสามารถทำแบบสอบถาม
           เพื่อประเมินความเสี่ยงเกี่ยวกับโรคหัวใจผ่านแอพพลิเคชั่นได้อีกด้วย
         </Text>
+        <Divider />
+        <Heading as="h2" size="md">
+          ประเมินความเสี่ยงจากภาพสแกนคลื่นไฟฟ้าหัวใจ
+        </Heading>
         <Dropzone
           onClearFile={() => setResult(null)}
           onSubmit={(f) => {

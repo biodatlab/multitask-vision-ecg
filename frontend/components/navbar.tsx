@@ -43,6 +43,10 @@ const BRAND: string = "หทัย AI";
 const SIGN_IN_LABEL: string = "เข้าสู่ระบบ";
 const NAV_ITEMS: Array<NavItem> = [
   {
+    label: "คลื่นไฟฟ้าหัวใจ",
+    href: "/",
+  },
+  {
     label: "แบบประเมินความเสี่ยง",
     href: "/assessment",
   },

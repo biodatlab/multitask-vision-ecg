@@ -8,9 +8,12 @@ import {
   Text,
   VStack,
   CircularProgress,
+  Heading,
+  HStack,
 } from "@chakra-ui/react";
 import React, { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
+import { BiImage, BiUpload } from "react-icons/bi";
 import { FaCloudUploadAlt } from "react-icons/fa";
 
 interface FileWithPreview extends File {
@@ -61,72 +64,138 @@ const Dropzone = ({ onClearFile, onSubmit, isLoading }: DropzoneProp) => {
   return (
     <VStack w="100%" gap={4}>
       {!selectedFile && (
-        <Flex
+        <Box
+          w={["100%", "md"]}
+          background={isDragAccept ? "secondary.50" : "white"}
+          borderRadius="lg"
+          boxShadow="lg"
+          p={6}
           {...getRootProps({ className: "dropzone" })}
-          justifyContent={"center"}
-          alignItems={"center"}
-          w="100%"
-          background={isDragAccept ? "pink.50" : "gray.50"}
-          border={`2px solid ${isDragReject ? "red" : "pink"}`}
-          borderRadius="md"
-          borderStyle="dashed"
-          py={6}
         >
-          <input {...getInputProps()} />
-          <Text color="gray.500">
-            <Icon as={FaCloudUploadAlt} w={14} h={14} />
-            <br />
-            ลากไฟล์มาที่นี่หรือคลิกที่นี่เพื่อเลือกไฟล์ &nbsp;
-            <Text
-              as="span"
-              color={isDragReject ? "red" : undefined}
-              fontWeight={isDragReject ? "bold" : undefined}
-            >
-              รองรับไฟล์ JPG, JPEG, PNG และ PDF ครั้งละ 1 ไฟล์เท่านั้น
-            </Text>
-          </Text>
-        </Flex>
+          <Flex
+            justifyContent={"center"}
+            alignItems={"center"}
+            borderWidth={1}
+            borderStyle="dashed"
+            borderColor={isDragReject ? "red" : "secondary.300"}
+            borderRadius="lg"
+            py={8}
+          >
+            <input {...getInputProps()} />
+            <Box color="gray.500">
+              <Icon as={BiImage} fontSize={54} color="secondary.400" mb={2} />
+
+              <Heading
+                as="h4"
+                fontSize={[18, 21]}
+                fontWeight="regular"
+                lineHeight="tall"
+                color="secondary.400"
+                mb={3}
+              >
+                ลากภาพสแกน ECG มาบริเวณนี้
+                <br />
+                เพื่ออัปโหลด หรือ
+              </Heading>
+
+              <Box mb={4}>
+                <Button
+                  variant="outline"
+                  colorScheme="secondary"
+                  color="secondary.400"
+                  leftIcon={<Icon as={BiUpload} color="red.300" />}
+                  px={3}
+                >
+                  อัปโหลดจากเครื่อง
+                </Button>
+              </Box>
+
+              <Box maxW={["80%", "60%"]} mx="auto">
+                <Text
+                  as="span"
+                  fontSize="xs"
+                  textAlign="center"
+                  color={isDragReject ? "red" : undefined}
+                  fontWeight={isDragReject ? "bold" : undefined}
+                >
+                  รองรับไฟล์ประเภท JPG, JPEG, PNG และ PDF รองรับได้ครั้งละ 1
+                  ไฟล์เท่านั้น
+                </Text>
+              </Box>
+            </Box>
+          </Flex>
+        </Box>
       )}
 
       {selectedFile && (
-        <>
+        <Box>
           <Box
-            border="2px solid pink"
-            borderRadius="md"
-            p={1}
-            borderStyle="dashed"
-            position="relative"
-            w={isPdfFile ? "100%" : "auto"}
+            w={{ base: "100%", md: "2xl", xl: "4xl" }}
+            backgroundColor="white"
+            borderRadius="lg"
+            boxShadow="lg"
+            mb={8}
           >
-            <Text textAlign={"center"} my={2} fontSize={14} fontStyle="italic">
-              {files[0].path}
-            </Text>
-            {isPdfFile ? (
-              <embed
-                src={files[0].preview}
-                style={{ width: "100%", height: "50vh" }}
-              />
-            ) : (
-              <Image src={files[0].preview} alt="preview image" />
-            )}
-            <CloseButton
-              onClick={() => {
-                handleClearFile();
-              }}
-              size="md"
-              position="absolute"
-              top={1}
-              right={1}
-            />
+            <Box
+              w={isPdfFile ? "100%" : "auto"}
+              borderWidth={1}
+              borderStyle="dashed"
+              borderColor="primary.300"
+              borderRadius="lg"
+              p={1}
+              position="relative"
+            >
+              <Text
+                textAlign={"center"}
+                my={2}
+                fontSize={14}
+                fontStyle="italic"
+              >
+                {files[0].path}
+              </Text>
+              {isPdfFile ? (
+                <embed
+                  src={files[0].preview}
+                  style={{ width: "100%", height: "50vh" }}
+                />
+              ) : (
+                <Image src={files[0].preview} alt="preview image" />
+              )}
+              {/* <CloseButton
+                onClick={() => {
+                  handleClearFile();
+                }}
+                size="md"
+                position="absolute"
+                top={1}
+                right={1}
+              /> */}
+            </Box>
           </Box>
           {!isLoading ? (
-            <Button
-              onClick={() => onSubmit(selectedFile)}
-              colorScheme={"pink"}
-              px={10}
-            >
-              ทำนาย
-            </Button>
+            <Flex justifyContent="flex-end">
+              <HStack>
+                <Button
+                  variant="outline"
+                  colorScheme="secondary"
+                  color="secondary.400"
+                  px={3}
+                  onClick={() => {
+                    handleClearFile();
+                  }}
+                >
+                  ลบภาพ
+                </Button>
+                <Button
+                  onClick={() => onSubmit(selectedFile)}
+                  colorScheme="primary"
+                  backgroundColor="primary.300"
+                  px={3}
+                >
+                  ทำนายผล
+                </Button>
+              </HStack>
+            </Flex>
           ) : (
             <CircularProgress
               isIndeterminate
@@ -137,7 +206,7 @@ const Dropzone = ({ onClearFile, onSubmit, isLoading }: DropzoneProp) => {
               capIsRound
             />
           )}
-        </>
+        </Box>
       )}
     </VStack>
   );

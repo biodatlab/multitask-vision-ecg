@@ -107,7 +107,7 @@ export default function WithSubnavigation({
           <NextLink href="/" passHref>
             <Link _hover={{ textDecorationStyle: "none" }}>
               <Image
-                src="/hatai-ai-logo.svg"
+                src="/images/hatai-ai-logo.png"
                 title="หทัย AI"
                 alt="หทัย AI"
                 height={8}

@@ -12,7 +12,7 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { FaCaretUp } from "react-icons/fa";
-import { predictionResult } from "../pages";
+import { predictionResult } from "../pages/ecg";
 
 interface PredictionProps {
   predictionResult: predictionResult;

@@ -5,17 +5,20 @@ const Footer = () => {
   const router = useRouter();
 
   return (
-    <Box w="100%" p={4} bg="pink.100">
+    <Box w="100%" pt={10} pb={8} bg="secondary.400">
       <Container textAlign="center">
-        <Text mb={2} fontSize="sm">
-          จัดทำโดยความร่วมมือระหว่าง ศูนย์โรคหัวใจ โรงพยาบาลศิริราช และ
+        <Text mb={2} fontSize="sm" color="white">
+          โมเดลนี้จัดทำโดยความร่วมมือระหว่างศูนย์โรคหัวใจ โรงพยาบาลศิริราช
           <br />
-          ภาควิชาวิศวกรรมชีวการแพทย์ คณะวิศวกรรมศาสตร์ มหาวิทยาลัยมหิดล
+          และภาควิชาวิศวกรรมชีวการแพทย์ คณะวิศวกรรมศาสตร์ มหาวิทยาลัยมหิดล
         </Text>
         <Button
           variant="link"
-          colorScheme="pink"
+          color="white"
           fontSize="sm"
+          _hover={{
+            textDecoration: "none",
+          }}
           onClick={() => {
             router.push("/privacy-policy");
           }}

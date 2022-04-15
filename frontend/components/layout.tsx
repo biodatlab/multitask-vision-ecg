@@ -29,6 +29,9 @@ const Layout = ({ children }: LayoutProps) => {
       flexDirection="column"
       background="#fefefd"
       color="gray.600"
+      // using 100vw inside this flex will cause the page to
+      // have scroll-x, this will prevent that
+      overflowX="hidden"
     >
       {/* <LoginModal isOpen={isOpenLoginModal} onClose={onCloseLoginModal} /> */}
       <Navbar

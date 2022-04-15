@@ -1,5 +1,7 @@
 import { ChakraProvider, extendTheme } from "@chakra-ui/react";
 import "@fontsource/ibm-plex-sans-thai";
+import "@fontsource/ibm-plex-sans-thai/400.css";
+import "@fontsource/ibm-plex-sans-thai/600.css";
 import type { AppProps } from "next/app";
 import Head from "next/head";
 import "../styles/globals.css";
@@ -45,6 +47,16 @@ const theme = extendTheme({
       700: "#28303F",
       800: "#191D27",
       900: "#161820",
+    },
+  },
+  styles: {
+    global: {
+      body: {
+        color: "gray.800",
+      },
+      p: {
+        color: "gray.800",
+      },
     },
   },
 });

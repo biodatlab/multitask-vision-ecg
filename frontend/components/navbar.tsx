@@ -53,10 +53,6 @@ const NAV_ITEMS: Array<NavItem> = [
     href: "/assessment",
   },
   {
-    label: "วิธีการใช้งาน",
-    href: "/instruction",
-  },
-  {
     label: "เกี่ยวกับเรา",
     href: "/about",
   },

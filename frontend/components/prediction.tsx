@@ -1,19 +1,12 @@
 import { Box, Flex, Heading, Stack, Text, VStack } from "@chakra-ui/react";
-import { predictionResult } from "../pages/ecg";
+import { prediction, predictionResult } from "../pages/ecg";
 
 interface PredictionProps {
   predictionResult: predictionResult;
-  onClickHowTo: () => void;
 }
 
 interface PredictionCardProps {
-  data: {
-    title: string;
-    description: string;
-    risk_level: string;
-    probability: number;
-    average: number;
-  };
+  data: prediction;
 }
 
 interface ProbabilityBarProps {

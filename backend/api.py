@@ -87,9 +87,9 @@ async def predict(file: UploadFile = File(...)):
             title_desc = TITLE_DESC_MAP.get(model_name)
             probability = pred["proba"][0] * 100
             prediction_output.append({
-                "title": title_desc[model_name]["title"],
-                "description": title_desc[model_name]["description"],
-                "average": title_desc[model_name]["average"],
+                "title": title_desc["title"],
+                "description": title_desc["description"],
+                "average": title_desc["average"],
                 "probability": probability,
                 "risk_level": calculate_risk_level(probability)
             })

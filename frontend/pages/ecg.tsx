@@ -40,73 +40,102 @@ const Ecg: NextPage = () => {
 
   return (
     <Layout>
-      <Box
-        position="relative"
-        textAlign="center"
-        borderRadius="3xl"
-        py={10}
-        my={12}
-      >
-        <Box
-          position="absolute"
-          borderRadius="3xl"
-          top={0}
-          left={0}
-          w="100%"
-          h="29.5em"
-          backgroundColor="secondary.50"
-        />
-        <Container maxW="container.sm" position="relative">
-          <Heading
-            as="h1"
-            fontSize={40}
-            lineHeight="tall"
-            fontWeight="semibold"
-            color="secondary.400"
-            mb={2}
-          >
-            AI ประเมินความเสี่ยง
-            <br />
-            จากภาพสแกนคลื่นไฟฟ้าหัวใจ
-          </Heading>
+      <Box my={12}>
+        {/* main content and dropzone */}
+        <Box position="relative" textAlign="center" borderRadius="3xl" py={10}>
+          <Box
+            position="absolute"
+            borderRadius="3xl"
+            top={0}
+            left={0}
+            w="100%"
+            h="29.5em"
+            backgroundColor="secondary.50"
+          />
+          <Container maxW="container.sm" position="relative">
+            <Heading
+              as="h1"
+              fontSize={40}
+              lineHeight="tall"
+              fontWeight="semibold"
+              color="secondary.400"
+              mb={2}
+            >
+              AI ประเมินความเสี่ยง
+              <br />
+              จากภาพสแกนคลื่นไฟฟ้าหัวใจ
+            </Heading>
 
-          <Box maxW="container.sm" px={[0, 20]}>
-            <Text mb={8}>
-              AI
-              ทำนายความน่าจะเป็นของการมีรอยแผลเป็นในหัวใจและค่าประสิทธิภาพการทำงานของหัวใจห้องล่างซ้ายจากภาพสแกนคลื่นไฟฟ้าหัวใจ
-              (Electrocardiogram, ECG) แบบ 12 Lead
-            </Text>
+            <Box maxW="container.sm" px={[0, 20]}>
+              <Text mb={8}>
+                AI
+                ทำนายความน่าจะเป็นของการมีรอยแผลเป็นในหัวใจและค่าประสิทธิภาพการทำงานของหัวใจห้องล่างซ้ายจากภาพสแกนคลื่นไฟฟ้าหัวใจ
+                (Electrocardiogram, ECG) แบบ 12 Lead
+              </Text>
 
-            <Box left={[0, "50%"]} right={[0, "50%"]}>
-              <Dropzone
-                onClearFile={() => setResult(null)}
-                onSubmit={(f) => {
-                  setIsLoadingResult(true);
-                  console.log(f);
+              <Box left={[0, "50%"]} right={[0, "50%"]}>
+                <Dropzone
+                  onClearFile={() => setResult(null)}
+                  onSubmit={(f) => {
+                    setIsLoadingResult(true);
+                    console.log(f);
 
-                  const formdata = new FormData();
-                  formdata.append("file", f, f.name);
+                    const formdata = new FormData();
+                    formdata.append("file", f, f.name);
 
-                  fetch("http://localhost:8000/api/predict", {
-                    method: "POST",
-                    body: formdata,
-                  })
-                    .then((res) => {
-                      return res.json();
+                    fetch("/api/predict", {
+                      method: "POST",
+                      body: formdata,
                     })
-                    .then((resJson) => {
-                      setResult(resJson);
-                      console.log("resJson", resJson);
-                    })
-                    .finally(() => {
-                      setIsLoadingResult(false);
-                    });
-                }}
-                isLoading={isLoadingResult}
-              />
+                      .then((res) => {
+                        return res.json();
+                      })
+                      .then((resJson) => {
+                        setResult(resJson);
+                        console.log("resJson", resJson);
+                      })
+                      .finally(() => {
+                        setIsLoadingResult(false);
+                      });
+                  }}
+                  isLoading={isLoadingResult}
+                />
+              </Box>
             </Box>
-          </Box>
-        </Container>
+          </Container>
+        </Box>
+
+        {/* if prediction result valid */}
+        <Box display={result && Array.isArray(result) ? undefined : "none"}>
+          <Prediction
+            onClickHowTo={() => setDisplayHowToCreateModel((prev) => !prev)}
+            predictionResult={result}
+          />
+        </Box>
+
+        {/* if prediction result error */}
+        <Box display={result && !Array.isArray(result) ? undefined : "none"}>
+          <Alert
+            status="error"
+            variant="subtle"
+            colorScheme="gray"
+            flexDirection="column"
+            alignItems="center"
+            justifyContent="center"
+            height="200px"
+            textAlign="center"
+            borderRadius="3xl"
+          >
+            <AlertIcon boxSize="40px" mr={0} />
+            <AlertTitle mt={4} mb={1} fontSize="lg">
+              ไม่สามารถทำนายได้
+            </AlertTitle>
+            <AlertDescription maxWidth="sm">
+              อาจมีข้อผิดพลาดเกี่ยวกับรูปภาพหรือไฟล์ที่ส่งมา
+              กรุณาลองใหม่อีกครั้งหรือติดต่อเรา
+            </AlertDescription>
+          </Alert>
+        </Box>
       </Box>
       {/* <Stack py={6} direction="column" textAlign={"center"} gap={2}>
         <Heading color="gray.500" as={"h1"}>

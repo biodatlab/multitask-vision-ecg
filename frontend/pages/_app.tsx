@@ -4,6 +4,7 @@ import "@fontsource/ibm-plex-sans-thai/400.css";
 import "@fontsource/ibm-plex-sans-thai/600.css";
 import type { AppProps } from "next/app";
 import Head from "next/head";
+import { makeServer } from "../lib/mirage";
 import "../styles/globals.css";
 
 const theme = extendTheme({
@@ -60,6 +61,18 @@ const theme = extendTheme({
     },
   },
 });
+
+console.log(
+  `[ECG-APP-DEBUG] process.env.NEXT_PUBLIC_ENABLE_MIRAGE in _app.tsx → "${process.env.NEXT_PUBLIC_ENABLE_MIRAGE}"`
+);
+console.log(
+  `[ECG-APP-DEBUG] process.env.NODE_ENV in _app.tsx → "${process.env.NODE_ENV}"`
+);
+
+if (process.env.NEXT_PUBLIC_ENABLE_MIRAGE === "TRUE") {
+  console.log(`[ECG-APP-DEBUG] mirage server is enabled..`);
+  makeServer({ environment: "development" });
+}
 
 function MyApp({ Component, pageProps }: AppProps) {
   // prettier-ignore

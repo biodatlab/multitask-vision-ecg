@@ -25,10 +25,11 @@ import Layout from "../components/layout";
 import Prediction from "../components/prediction";
 
 interface prediction {
-  prediction_title: string;
-  score: number;
-  labelLt: string;
-  labelRt: string;
+  title: string;
+  description: string;
+  risk_level: string;
+  probability: number;
+  average: number;
 }
 
 export type predictionResult = Array<prediction> | { error: string } | null;

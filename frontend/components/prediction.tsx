@@ -1,17 +1,4 @@
-import {
-  Box,
-  Button,
-  Flex,
-  Heading,
-  Icon,
-  ListItem,
-  Stack,
-  Switch,
-  Text,
-  UnorderedList,
-  useDisclosure,
-} from "@chakra-ui/react";
-import { FaCaretUp } from "react-icons/fa";
+import { Box, Flex, Heading, Stack, Text, VStack } from "@chakra-ui/react";
 import { predictionResult } from "../pages/ecg";
 
 interface PredictionProps {
@@ -19,282 +6,184 @@ interface PredictionProps {
   onClickHowTo: () => void;
 }
 
-interface ValueBoxProps {
-  title: string;
-  labelLt: string;
-  labelRt: string;
-  value: number;
-}
 interface PredictionCardProps {
-  title: string;
-  description: string;
-  labelLt: string;
-  labelRt: string;
-  value: number;
+  data: {
+    title: string;
+    description: string;
+    risk_level: string;
+    probability: number;
+    average: number;
+  };
 }
 
-const ValueBox = ({ title, labelLt, labelRt, value }: ValueBoxProps) => {
-  const leftOffset = (value * 100).toFixed(2);
-  const renderValue = value.toFixed(2);
-  const renderOnSide = 1 - value >= 0.5 ? "left" : "right";
-  const valueLt = renderOnSide === "left" ? renderValue : "0.00";
-  const valueRt = renderOnSide === "right" ? renderValue : "0.00";
+interface ProbabilityBarProps {
+  probability: number;
+  average: number;
+}
+
+const ProbabilityBar = ({ probability, average }: ProbabilityBarProps) => {
+  const height = 24;
+  const shift = height / 2 + 4;
 
   return (
-    <Flex flex={1} flexDirection="column" alignItems="center" px={8}>
-      <Heading size="md" as="h3" textAlign="center" mb={4}>
-        {title}
-      </Heading>
-      <Stack
-        direction="row"
-        w="100%"
-        gap={{ base: 0, md: 1 }}
-        alignItems="flex-start"
-        justifyContent="center"
+    <Flex
+      maxW={{ base: "100%", md: "77.5%" }}
+      h={height}
+      flex={1}
+      position="relative"
+    >
+      {/* top labels */}
+      <Flex
+        width="100%"
+        justifyContent="space-between"
+        position="absolute"
+        top={shift - 3 - 10 + 2}
       >
-        <Box>
-          <Text
-            fontSize="xs"
-            textAlign="center"
-            color="gray.500"
-            fontWeight={renderOnSide === "left" ? "bold" : "normal"}
-          >
-            <Text
-              as="span"
-              fontSize="125%"
-              opacity={renderOnSide === "left" ? 1 : 0}
-            >
-              {valueLt}
-            </Text>
-            <br />
-            {labelLt}
-          </Text>
-        </Box>
-        <Flex maxW="65%" flex={1} pt={1} position="relative">
-          <Box
-            h={4}
-            w="100%"
-            borderRadius="xl"
-            bgGradient="linear(to-r, pink.100, pink.200, red.400, red.500)"
-          />
-          <Box
-            h={4}
-            w="3px"
-            position="absolute"
-            top={1}
-            left={`calc(${leftOffset}% - 1.5px)`}
-            backgroundColor="gray.600"
-            borderRadius="md"
-          />
-          <Box position="absolute" top={4} left={`calc(${leftOffset}% - 10px)`}>
-            <Icon w="20px" h="20px" as={FaCaretUp} color="gray.600" />
-          </Box>
-        </Flex>
-        <Box>
-          <Text
-            fontSize="xs"
-            textAlign="center"
-            color={renderOnSide === "right" ? "red.500" : "gray.500"}
-            fontWeight={renderOnSide === "right" ? "bold" : "normal"}
-          >
-            <Text
-              as="span"
-              fontSize="125%"
-              opacity={renderOnSide === "right" ? 1 : 0}
-            >
-              {valueRt}
-            </Text>
-            <br />
-            {labelRt}
-          </Text>
-        </Box>
-      </Stack>
+        <Text
+          as="span"
+          color="gray.800"
+          fontSize="sm"
+          ml={{ base: -1, md: -9 }}
+        >
+          ความเสี่ยงต่ำ
+        </Text>
+        <Text
+          as="span"
+          color="gray.800"
+          fontSize="sm"
+          mr={{ base: -1, md: -9 }}
+        >
+          ความเสี่ยงสูง
+        </Text>
+      </Flex>
+      {/* bg bar */}
+      <Box
+        h={8}
+        w="100%"
+        position="absolute"
+        top={shift - 4}
+        backgroundColor="gray.100"
+      />
+      {/* gradient bar */}
+      <Box
+        h={8}
+        w={`${probability}%`}
+        position="absolute"
+        top={shift - 4}
+        bgGradient="linear(to-r, #E04586, #FF6651)"
+        borderRightRadius="3xl"
+      />
+      {/* inner percent text */}
+      <Box position="absolute" top="53px" right={`${102 - probability}%`}>
+        <Text as="span" color="white" fontSize="md" fontWeight="semibold">
+          {`${Math.round(probability)}%`}
+        </Text>
+      </Box>
+      {/* average pole */}
+      <Box
+        h={10}
+        w="2px"
+        position="absolute"
+        top={shift - 5 - 1}
+        left={`calc(${average}% - 1px)`}
+        backgroundColor="gray.800"
+      />
+      {/* average label */}
+      <Box
+        position="absolute"
+        top={shift - 3 - 10 + 2}
+        left={`calc(${average}% - 18px)`}
+      >
+        <Text as="span" color="gray.900" fontSize="xs">
+          ค่าเฉลี่ย
+        </Text>
+      </Box>
+      {/* bottom labels */}
+      <Flex
+        width="100%"
+        justifyContent="space-between"
+        position="absolute"
+        bottom={0 - 2}
+      >
+        <Text as="span" color="gray.700" fontSize="xs">
+          0
+        </Text>
+        <Text as="span" color="gray.700" fontSize="xs">
+          25
+        </Text>
+        <Text as="span" color="gray.700" fontSize="xs">
+          50
+        </Text>
+        <Text as="span" color="gray.700" fontSize="xs">
+          75
+        </Text>
+        <Text as="span" color="gray.700" fontSize="xs">
+          100%
+        </Text>
+      </Flex>
     </Flex>
   );
 };
 
-const PredictionCard = ({
-  title,
-  description,
-  labelLt,
-  labelRt,
-  value,
-}: PredictionCardProps) => {
-  const leftOffset = (value * 100).toFixed(2);
-  const renderValue = value.toFixed(2);
-  const renderOnSide = 1 - value >= 0.5 ? "left" : "right";
-  const valueLt = renderOnSide === "left" ? renderValue : "0.00";
-  const valueRt = renderOnSide === "right" ? renderValue : "0.00";
+const PredictionCard = ({ data }: PredictionCardProps) => {
+  const { title, description, risk_level, probability, average } = data;
 
   return (
-    <Flex flex={1} flexDirection="column" alignItems="center" px={8}>
-      <Flex justifyContent="space-between">
+    <Flex
+      flex={1}
+      w={{ base: "100%", md: "75%", lg: "60%" }}
+      flexDirection="column"
+      alignItems="center"
+      borderRadius="2xl"
+      boxShadow="lg"
+      p={6}
+    >
+      <Flex w="100%" justifyContent="space-between" alignItems="center" mb={4}>
         <Box>
           <Heading as="h5" fontSize="2xl" color="secondary.400" mb={1}>
             {title}
           </Heading>
-          <Text fontSize="sm">{description}</Text>
+          <Text fontSize="sm" maxW="2xs">
+            {description}
+          </Text>
         </Box>
-        <Box textAlign="center">
+        <Box
+          textAlign="center"
+          backgroundColor="gray.50"
+          borderRadius="lg"
+          p={3}
+        >
           <Text fontSize="sm" mb={3}>
             ระดับความเสี่ยง
           </Text>
-          <Heading as="h5" fontSize="2xl" color="primary.300" mb={1}>
-            ต่ำ
+          <Heading as="h5" fontSize="xl" color="primary.300" mb={1}>
+            {risk_level}
           </Heading>
         </Box>
       </Flex>
-      {/* <Heading size="md" as="h3" textAlign="center" mb={4}>
-        {title}
-      </Heading>
-      <Stack
-        direction="row"
-        w="100%"
-        gap={{ base: 0, md: 1 }}
-        alignItems="flex-start"
-        justifyContent="center"
-      >
-        <Box>
-          <Text
-            fontSize="xs"
-            textAlign="center"
-            color="gray.500"
-            fontWeight={renderOnSide === "left" ? "bold" : "normal"}
-          >
-            <Text
-              as="span"
-              fontSize="125%"
-              opacity={renderOnSide === "left" ? 1 : 0}
-            >
-              {valueLt}
-            </Text>
-            <br />
-            {labelLt}
-          </Text>
-        </Box>
-        <Flex maxW="65%" flex={1} pt={1} position="relative">
-          <Box
-            h={4}
-            w="100%"
-            borderRadius="xl"
-            bgGradient="linear(to-r, pink.100, pink.200, red.400, red.500)"
-          />
-          <Box
-            h={4}
-            w="3px"
-            position="absolute"
-            top={1}
-            left={`calc(${leftOffset}% - 1.5px)`}
-            backgroundColor="gray.600"
-            borderRadius="md"
-          />
-          <Box position="absolute" top={4} left={`calc(${leftOffset}% - 10px)`}>
-            <Icon w="20px" h="20px" as={FaCaretUp} color="gray.600" />
-          </Box>
-        </Flex>
-        <Box>
-          <Text
-            fontSize="xs"
-            textAlign="center"
-            color={renderOnSide === "right" ? "red.500" : "gray.500"}
-            fontWeight={renderOnSide === "right" ? "bold" : "normal"}
-          >
-            <Text
-              as="span"
-              fontSize="125%"
-              opacity={renderOnSide === "right" ? 1 : 0}
-            >
-              {valueRt}
-            </Text>
-            <br />
-            {labelRt}
-          </Text>
-        </Box>
-      </Stack> */}
+
+      <Flex w="100%" justifyContent="center">
+        <ProbabilityBar probability={probability} average={average} />
+      </Flex>
     </Flex>
   );
 };
 
-const Prediction = ({ predictionResult, onClickHowTo }: PredictionProps) => {
-  const {
-    isOpen: isOpenPanel,
-    onClose: onClosePanel,
-    onOpen: onOpenPanel,
-  } = useDisclosure({ defaultIsOpen: true });
-
+const Prediction = ({ predictionResult }: PredictionProps) => {
   if (!Array.isArray(predictionResult)) {
     return null;
   }
-
-  const mock = predictionResult[0];
 
   return (
     <Stack direction="column" gap={4} mt={10}>
       <Heading as="h4" fontSize="2xl" color="secondary.400" mb={6}>
         ผลทำนาย
       </Heading>
-      <PredictionCard
-        title="Myocardial scar"
-        description="ความเสี่ยงที่จะมีรอยแผลเป็นที่กล้ามเนื้อหัวใจ"
-        labelLt={mock.labelLt}
-        labelRt={mock.labelRt}
-        value={mock.score}
-      />
-      {/* <Flex justifyContent="flex-end" alignItems="center">
-        <Box>
-          <Switch
-            defaultChecked
-            size="md"
-            colorScheme="primary"
-            onChange={(e) =>
-              e.currentTarget.checked ? onOpenPanel() : onClosePanel()
-            }
-          />
-          &nbsp; เปิด / ปิด การทำนายผล
-        </Box>
-      </Flex>
-      {isOpenPanel && (
-        <>
-          <Stack
-            direction={{ base: "column", md: "row" }}
-            gap={{ base: 8, md: 2 }}
-          >
-            {predictionResult.map(
-              ({ prediction_title, score, labelLt, labelRt }) => (
-                <ValueBox
-                  key={`${prediction_title}-${score}`}
-                  title={prediction_title}
-                  labelLt={labelLt}
-                  labelRt={labelRt}
-                  value={score}
-                />
-              )
-            )}
-          </Stack>
-          <Box textAlign="left" fontSize="sm">
-            <UnorderedList>
-              <ListItem>
-                ความเสี่ยงที่จะมีรอยแผลเป็นที่กล้อมเนื้อหัวใจ (Myocardial scar,
-                scar)
-              </ListItem>
-              <ListItem>
-                ค่าประสิทธิภาพการทำงานของหัวใจห้องล่างซ้าย (Left ventricular
-                ejection fraction, LVEF)
-              </ListItem>
-              <ListItem>
-                <Button
-                  colorScheme="pink"
-                  variant="link"
-                  onClick={onClickHowTo}
-                  size="sm"
-                >
-                  ดูวิธีการสร้างโมเดล
-                </Button>
-              </ListItem>
-            </UnorderedList>
-          </Box>
-        </>
-      )} */}
+      <VStack gap={8}>
+        {predictionResult.map((data) => (
+          <PredictionCard key={data.title} data={data} />
+        ))}
+      </VStack>
     </Stack>
   );
 };

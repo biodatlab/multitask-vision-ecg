@@ -4,7 +4,7 @@ import "@fontsource/ibm-plex-sans-thai/400.css";
 import "@fontsource/ibm-plex-sans-thai/600.css";
 import type { AppProps } from "next/app";
 import Head from "next/head";
-import { makeServer } from "../lib/mirage";
+import { makeServer } from "../libs/mirage";
 import "../styles/globals.css";
 
 const theme = extendTheme({

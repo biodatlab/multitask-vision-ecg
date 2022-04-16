@@ -1,20 +1,17 @@
 import {
   Box,
   Button,
-  CloseButton,
   Flex,
+  Heading,
+  HStack,
   Icon,
   Image,
   Text,
   VStack,
-  CircularProgress,
-  Heading,
-  HStack,
 } from "@chakra-ui/react";
 import React, { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { BiImage, BiUpload } from "react-icons/bi";
-import { FaCloudUploadAlt } from "react-icons/fa";
 
 interface FileWithPreview extends File {
   preview: string;
@@ -63,11 +60,12 @@ const Dropzone = ({ onClearFile, onSubmit, isLoading }: DropzoneProp) => {
 
   return (
     <VStack w="100%" gap={4}>
+      {/* no selected file */}
       {!selectedFile && (
         <Box
           w={["100%", "md"]}
           background={isDragAccept ? "secondary.50" : "white"}
-          borderRadius="lg"
+          borderRadius="xl"
           boxShadow="lg"
           p={6}
           {...getRootProps({ className: "dropzone" })}
@@ -78,25 +76,25 @@ const Dropzone = ({ onClearFile, onSubmit, isLoading }: DropzoneProp) => {
             borderWidth={1}
             borderStyle="dashed"
             borderColor={isDragReject ? "red" : "secondary.300"}
-            borderRadius="lg"
+            borderRadius="xl"
             py={8}
           >
             <input {...getInputProps()} />
             <Box color="gray.500">
               <Icon as={BiImage} fontSize={54} color="secondary.400" mb={2} />
 
-              <Heading
-                as="h4"
-                fontSize={[18, 21]}
-                fontWeight="regular"
-                lineHeight="tall"
-                color="secondary.400"
-                mb={3}
-              >
-                ลากภาพสแกน ECG มาบริเวณนี้
-                <br />
-                เพื่ออัปโหลด หรือ
-              </Heading>
+              <Box maxW={["80%", "75%"]} mx="auto">
+                <Heading
+                  as="h4"
+                  fontSize={[18, 21]}
+                  fontWeight="regular"
+                  lineHeight="tall"
+                  color="secondary.400"
+                  mb={3}
+                >
+                  ลากภาพสแกน ECG มาบริเวณนี้เพื่ออัปโหลด หรือ
+                </Heading>
+              </Box>
 
               <Box mb={4}>
                 <Button
@@ -110,7 +108,7 @@ const Dropzone = ({ onClearFile, onSubmit, isLoading }: DropzoneProp) => {
                 </Button>
               </Box>
 
-              <Box maxW={["80%", "60%"]} mx="auto">
+              <Box maxW={["80%", "55%"]} mx="auto">
                 <Text
                   as="span"
                   fontSize="xs"
@@ -127,6 +125,7 @@ const Dropzone = ({ onClearFile, onSubmit, isLoading }: DropzoneProp) => {
         </Box>
       )}
 
+      {/* file selected */}
       {selectedFile && (
         <Box>
           <Box
@@ -136,14 +135,16 @@ const Dropzone = ({ onClearFile, onSubmit, isLoading }: DropzoneProp) => {
             boxShadow="lg"
             mb={8}
           >
+            {/* previewer */}
             <Box
+              position="relative"
               w={isPdfFile ? "100%" : "auto"}
               borderWidth={1}
               borderStyle="dashed"
               borderColor="primary.300"
-              borderRadius="lg"
+              borderRadius="xl"
+              overflow="hidden"
               p={1}
-              position="relative"
             >
               <Text
                 textAlign={"center"}
@@ -161,51 +162,35 @@ const Dropzone = ({ onClearFile, onSubmit, isLoading }: DropzoneProp) => {
               ) : (
                 <Image src={files[0].preview} alt="preview image" />
               )}
-              {/* <CloseButton
+            </Box>
+          </Box>
+
+          {/* buttons */}
+          <Flex justifyContent="flex-end">
+            <HStack>
+              <Button
+                variant="outline"
+                colorScheme="secondary"
+                color="secondary.400"
+                px={3}
                 onClick={() => {
                   handleClearFile();
                 }}
-                size="md"
-                position="absolute"
-                top={1}
-                right={1}
-              /> */}
-            </Box>
-          </Box>
-          {!isLoading ? (
-            <Flex justifyContent="flex-end">
-              <HStack>
-                <Button
-                  variant="outline"
-                  colorScheme="secondary"
-                  color="secondary.400"
-                  px={3}
-                  onClick={() => {
-                    handleClearFile();
-                  }}
-                >
-                  ลบภาพ
-                </Button>
-                <Button
-                  onClick={() => onSubmit(selectedFile)}
-                  colorScheme="primary"
-                  backgroundColor="primary.300"
-                  px={3}
-                >
-                  ทำนายผล
-                </Button>
-              </HStack>
-            </Flex>
-          ) : (
-            <CircularProgress
-              isIndeterminate
-              color="pink.300"
-              trackColor="pink.100"
-              size="32px"
-              thickness="16"
-              capIsRound
-            />
-          )}
+                visibility={isLoading ? "hidden" : "visible"}
+              >
+                ลบภาพ
+              </Button>
+              <Button
+                colorScheme="primary"
+                backgroundColor="primary.300"
+                px={3}
+                onClick={() => onSubmit(selectedFile)}
+                isLoading={isLoading}
+              >
+                ทำนายผล
+              </Button>
+            </HStack>
+          </Flex>
         </Box>
       )}
     </VStack>

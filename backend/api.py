@@ -38,7 +38,7 @@ def calculate_risk_level(prob):
     """Calculate probability to risk level"""
     if prob < 30:
         return "ต่ำ"
-    elif prob >= 30 and prob <= 70:
+    elif prob >= 30 and prob < 70:
         return "ปานกลาง"
     else:
         return "สูง"
@@ -87,11 +87,11 @@ async def predict(file: UploadFile = File(...)):
             title_desc = TITLE_DESC_MAP.get(model_name)
             probability = pred["proba"][0] * 100
             prediction_output.append({
-                    "title": title_desc[model_name]["title"],
-                    "description": title_desc[model_name]["description"],
-                    "average": title_desc[model_name]["average"],
-                    "probability": probability,
-                    "risk_level": calculate_risk_level(probability)
+                "title": title_desc[model_name]["title"],
+                "description": title_desc[model_name]["description"],
+                "average": title_desc[model_name]["average"],
+                "probability": probability,
+                "risk_level": calculate_risk_level(probability)
             })
         return JSONResponse(status_code=status.HTTP_200_OK, content=prediction_output)
     except Exception as e:

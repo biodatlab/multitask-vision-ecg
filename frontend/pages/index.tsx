@@ -38,7 +38,7 @@ const ApplicationPanel = ({
   const [hovered, setHovered] = useState(false);
 
   return (
-    <GridItem colSpan={colSpan}>
+    <GridItem colSpan={{ base: 1, md: colSpan }}>
       <Flex
         h="100%"
         direction="column"

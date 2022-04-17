@@ -1,5 +1,5 @@
 import { Box, Flex, Heading, Stack, Text, VStack } from "@chakra-ui/react";
-import { prediction, predictionResult } from "../pages/ecg";
+import { prediction, predictionResult } from "../../pages/ecg";
 
 interface PredictionProps {
   predictionResult: predictionResult;

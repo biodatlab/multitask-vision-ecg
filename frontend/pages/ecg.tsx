@@ -19,9 +19,9 @@ import {
 } from "@chakra-ui/react";
 import type { NextPage } from "next";
 import { useState } from "react";
-import Dropzone from "../components/dropzone";
+import Dropzone from "../components/ecg/dropzone";
+import Prediction from "../components/ecg/prediction";
 import Layout from "../components/layout";
-import Prediction from "../components/prediction";
 
 export interface prediction {
   title: string;
@@ -150,7 +150,7 @@ const Ecg: NextPage = () => {
 
                       <Text>
                         ในการสร้างโมเดลการทำนาย
-                        ข้อมูลถูกแบ่งเป้นชุดข้อมูลสำหรับสร้างโมเดล,
+                        ข้อมูลถูกแบ่งเป็นชุดข้อมูลสำหรับสร้างโมเดล,
                         วัดผลระหว่างคำนวณโมเดล และทดสอบโมเดล ด้วยสัดส่วน
                         80:10:10 ทั้งนี้โมเดลอาจมีความผิดพลาดในการทำนายผลได้
                         ผู้ใช้งานสามารถดูความถูกต้องของการทดสอบโมเดลเบื้องต้นได้ตามตารางด้านล่าง

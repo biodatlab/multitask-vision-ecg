@@ -1,9 +1,8 @@
-import { Container, Flex, Spacer, useDisclosure } from "@chakra-ui/react";
-import { useEffect } from "react";
+import { Container, Flex, Spacer } from "@chakra-ui/react";
+import Footer from "./footer";
 // import { useAuthState } from "react-firebase-hooks/auth";
 // import LoginModal from "../components/loginModal";
-import Navbar from "../components/navbar";
-import Footer from "../components/footer";
+import Navbar from "./navbar";
 // import { auth, logOut } from "../utils/firebase/clientApp";
 
 interface LayoutProps {

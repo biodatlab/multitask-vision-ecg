@@ -18,10 +18,10 @@ import Layout from "../components/layout";
 
 export interface prediction {
   title: string;
-  description: string;
+  description?: string;
   risk_level: string;
   probability: number;
-  average: number;
+  average?: number;
 }
 
 export type predictionResult = Array<prediction> | { error: string } | null;

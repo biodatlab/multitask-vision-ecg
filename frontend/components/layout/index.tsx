@@ -26,7 +26,6 @@ const Layout = ({ children }: LayoutProps) => {
     <Flex
       h="100vh"
       flexDirection="column"
-      background="#fefefd"
       color="gray.600"
       // using 100vw inside this flex will cause the page to
       // have scroll-x, this will prevent that

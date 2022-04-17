@@ -1,4 +1,5 @@
 import { FaBars, FaTimes, FaAngleDown, FaAngleRight } from "react-icons/fa";
+import { BiUserCircle } from "react-icons/bi";
 import {
   Avatar,
   Box,
@@ -24,6 +25,7 @@ import {
 } from "@chakra-ui/react";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 
 export interface NavItem {
   label: string;
@@ -43,16 +45,12 @@ const BRAND: string = "หทัย AI";
 const SIGN_IN_LABEL: string = "เข้าสู่ระบบ";
 const NAV_ITEMS: Array<NavItem> = [
   {
-    label: "คลื่นไฟฟ้าหัวใจ",
-    href: "/",
+    label: "อ่านคลื่นไฟฟ้าหัวใจ",
+    href: "/ecg",
   },
   {
     label: "แบบประเมินความเสี่ยง",
     href: "/assessment",
-  },
-  {
-    label: "วิธีการใช้งาน",
-    href: "/instruction",
   },
   {
     label: "เกี่ยวกับเรา",
@@ -75,18 +73,11 @@ export default function WithSubnavigation({
   });
 
   return (
-    <Box
-      backgroundColor={"white"}
-      borderBottom={1}
-      borderStyle={"solid"}
-      borderColor={useColorModeValue("gray.200", "gray.900")}
-    >
+    <Box>
       <Flex
-        bg={useColorModeValue("white", "gray.800")}
         color={useColorModeValue("gray.600", "white")}
         minH={"60px"}
-        py={{ base: 2 }}
-        px={{ base: 4 }}
+        p={{ base: 4 }}
         align={"center"}
         width={{ md: "container.md", lg: "container.lg" }}
         margin={"auto"}
@@ -107,10 +98,10 @@ export default function WithSubnavigation({
           <NextLink href="/" passHref>
             <Link _hover={{ textDecorationStyle: "none" }}>
               <Image
-                src="/hatai-ai-logo.svg"
+                src="/images/hatai-ai-logo.png"
                 title="หทัย AI"
                 alt="หทัย AI"
-                height={8}
+                height={10}
               />
               {/* <Text
                 as="b"
@@ -124,7 +115,7 @@ export default function WithSubnavigation({
             </Link>
           </NextLink>
 
-          <Flex display={{ base: "none", md: "flex" }} ml={10}>
+          <Flex display={{ base: "none", md: "flex" }} mx="auto">
             <DesktopNav />
           </Flex>
         </Flex>
@@ -137,10 +128,13 @@ export default function WithSubnavigation({
         >
           {isLoadingUserStatus ? null : !isLoggedIn ? (
             <Button
+              variant={signInButtonVariant}
+              leftIcon={<BiUserCircle size="18px" />}
               fontSize={"sm"}
               fontWeight={600}
-              colorScheme={"pink"}
-              variant={signInButtonVariant}
+              colorScheme={"primary"}
+              color="primary.300"
+              px={3}
               onClick={() => {
                 onClickLogin();
               }}
@@ -181,9 +175,16 @@ export default function WithSubnavigation({
 }
 
 const DesktopNav = () => {
-  const linkColor = useColorModeValue("gray.600", "gray.200");
-  const linkHoverColor = useColorModeValue("gray.800", "white");
+  const linkColor = useColorModeValue("secondary.400", "gray.200");
+  const linkHoverColor = useColorModeValue("secondary.600", "white");
   const popoverContentBgColor = useColorModeValue("white", "gray.800");
+
+  const router = useRouter();
+  const [currentPath, setCurrentPath] = useState("/");
+
+  useEffect(() => {
+    setCurrentPath(router.pathname);
+  }, [router]);
 
   return (
     <Stack direction={"row"} spacing={4} alignItems="center">
@@ -201,7 +202,17 @@ const DesktopNav = () => {
                   color: linkHoverColor,
                 }}
               >
-                {navItem.label}
+                <Box
+                  as="span"
+                  fontWeight={
+                    currentPath === navItem.href ? "semibold" : "regular"
+                  }
+                  borderBottomWidth={currentPath === navItem.href ? 2 : 0}
+                  borderBottomStyle="solid"
+                  borderColor="secondary.400"
+                >
+                  {navItem.label}
+                </Box>
               </Link>
             </NextLink>
           ) : (
@@ -314,7 +325,7 @@ const MobileNavItem = ({ label, children, href }: NavItem) => {
       >
         <Text
           fontWeight={600}
-          color={useColorModeValue("gray.600", "gray.200")}
+          color={useColorModeValue("secondary.400", "gray.200")}
         >
           {label}
         </Text>

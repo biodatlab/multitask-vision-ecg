@@ -1,7 +1,10 @@
 import { ChakraProvider, extendTheme } from "@chakra-ui/react";
 import "@fontsource/ibm-plex-sans-thai";
+import "@fontsource/ibm-plex-sans-thai/400.css";
+import "@fontsource/ibm-plex-sans-thai/600.css";
 import type { AppProps } from "next/app";
 import Head from "next/head";
+import { makeServer } from "../libs/mirage";
 import "../styles/globals.css";
 
 const theme = extendTheme({
@@ -9,7 +12,67 @@ const theme = extendTheme({
     heading: '"IBM Plex Sans Thai", sans-serif',
     body: '"IBM Plex Sans Thai", sans-serif',
   },
+  colors: {
+    primary: {
+      50: "#FFF2EF",
+      100: "#FFBBB1",
+      200: "#FF8E7F",
+      300: "#FF624D",
+      400: "#FE361B",
+      500: "#E51E01",
+      600: "#B31600",
+      700: "#850D00",
+      800: "#6F0800",
+      900: "#4F0600",
+    },
+    secondary: {
+      50: "#F9FAFF",
+      100: "#C9D1EC",
+      200: "#A7B3D9",
+      300: "#8494C7",
+      400: "#6375B6",
+      500: "#495C9C",
+      600: "#38477B",
+      700: "#3B466F",
+      800: "#283359",
+      900: "#151F38",
+    },
+    gray: {
+      50: "#F6F9FC",
+      100: "#EAF0F6",
+      200: "#DEE5EE",
+      300: "#C4CFDC",
+      400: "#96A5B8",
+      500: "#66758B",
+      600: "#414B5D",
+      700: "#28303F",
+      800: "#191D27",
+      900: "#161820",
+    },
+  },
+  styles: {
+    global: {
+      body: {
+        color: "gray.800",
+      },
+      p: {
+        color: "gray.800",
+      },
+    },
+  },
 });
+
+console.log(
+  `[ECG-APP-DEBUG] process.env.NEXT_PUBLIC_ENABLE_MIRAGE in _app.tsx → "${process.env.NEXT_PUBLIC_ENABLE_MIRAGE}"`
+);
+console.log(
+  `[ECG-APP-DEBUG] process.env.NODE_ENV in _app.tsx → "${process.env.NODE_ENV}"`
+);
+
+if (process.env.NEXT_PUBLIC_ENABLE_MIRAGE === "TRUE") {
+  console.log(`[ECG-APP-DEBUG] mirage server is enabled..`);
+  makeServer({ environment: "development" });
+}
 
 function MyApp({ Component, pageProps }: AppProps) {
   // prettier-ignore

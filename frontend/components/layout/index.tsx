@@ -1,9 +1,8 @@
-import { Container, Flex, Spacer, useDisclosure } from "@chakra-ui/react";
-import { useEffect } from "react";
+import { Container, Flex, Spacer } from "@chakra-ui/react";
+import Footer from "./footer";
 // import { useAuthState } from "react-firebase-hooks/auth";
 // import LoginModal from "../components/loginModal";
-import Navbar from "../components/navbar";
-import Footer from "../components/footer";
+import Navbar from "./navbar";
 // import { auth, logOut } from "../utils/firebase/clientApp";
 
 interface LayoutProps {
@@ -27,8 +26,10 @@ const Layout = ({ children }: LayoutProps) => {
     <Flex
       h="100vh"
       flexDirection="column"
-      background="#fefefd"
       color="gray.600"
+      // using 100vw inside this flex will cause the page to
+      // have scroll-x, this will prevent that
+      overflowX="hidden"
     >
       {/* <LoginModal isOpen={isOpenLoginModal} onClose={onCloseLoginModal} /> */}
       <Navbar

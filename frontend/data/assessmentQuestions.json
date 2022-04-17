@@ -1,0 +1,79 @@
+{
+  "1": {
+    "key": "year_of_birth",
+    "text": "ปีเกิด (พ.ศ.)",
+    "type": "input",
+    "optional": false,
+    "choices": []
+  },
+  "2": {
+    "key": "female",
+    "text": "เพศกำเนิด",
+    "type": "radio",
+    "optional": false,
+    "choices": ["ชาย", "หญิง"]
+  },
+  "3": {
+    "key": "height",
+    "text": "ส่วนสูง (เซ็นติเมตร)",
+    "type": "input",
+    "optional": false,
+    "choices": []
+  },
+  "4": {
+    "key": "weight",
+    "text": "น้ำหนัก (กิโลกรัม)",
+    "type": "input",
+    "optional": false,
+    "choices": []
+  },
+  "5": {
+    "key": "diabetes_mellitus",
+    "text": "คุณเคยมีประวิติเป็นโรคเบาหวานหรือไม่",
+    "type": "radio",
+    "optional": false,
+    "choices": ["ไม่เคย", "เคย"]
+  },
+  "6": {
+    "key": "history_mi",
+    "text": "คุณเคยมีประวัติเป็นโรคกล้ามเนื้อหัวใจตายหรือไม่",
+    "type": "radio",
+    "optional": false,
+    "choices": ["ไม่เคย", "เคย"]
+  },
+  "7": {
+    "key": "history_ptca_cabg",
+    "text": "คุณเคยมีประวัติได้รับการขยายหลอดเลือดหัวใจตีบด้วยบอลลูน (PTCA) หรือการผ่าตัดบายพาส (CABG) หรือไม่",
+    "type": "radio",
+    "optional": false,
+    "choices": ["ไม่เคย", "เคย"]
+  },
+  "8": {
+    "key": "history_cad",
+    "text": "คุณเคยมีประวัติเป็นโรคหลอดเลือดหัวใจตีบหรือตัน (CAD) หรือไม่",
+    "type": "radio",
+    "optional": false,
+    "choices": ["ไม่เคย", "เคย"]
+  },
+  "9": {
+    "key": "history_hf",
+    "text": "คุณเคยมีประวัติเป็นโรคหัวใจล้มเหลวหรือไม่",
+    "type": "radio",
+    "optional": false,
+    "choices": ["ไม่เคย", "เคย"]
+  },
+  "10": {
+    "key": "hypertension",
+    "text": "คุณเคยมีประวัติเป็นโรคความดันโลหิตสูงหรือไม่",
+    "type": "radio",
+    "optional": false,
+    "choices": ["ไม่เคย", "เคย"]
+  },
+  "11": {
+    "key": "history_ckd",
+    "text": "คุณเคยมีประวัติเป็นโรคไตเรื้อรังหรือไม่",
+    "type": "radio",
+    "optional": false,
+    "choices": ["ไม่เคย", "เคย"]
+  }
+}

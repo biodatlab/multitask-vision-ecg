@@ -17,10 +17,11 @@ import {
   StackDivider,
   VStack,
 } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import assessmentQuestions from "../../data/assessmentQuestions.json";
 import type { prediction } from "../../pages/ecg";
+import formula from "../../data/formula";
 
 // -- CONSTANTS
 const questionsMap: { [index: string]: number[] } = {
@@ -52,6 +53,8 @@ const getRiskLabel = (percent: number) => {
 
   return "สูง";
 };
+const snakeToCamel = (str: string): string =>
+  str.toLowerCase().replace(/(_\w)/g, (m) => m.toUpperCase().substr(1));
 
 // -- WRAPPED COMPONENTS
 const WrappedRadio = forwardRef<
@@ -95,27 +98,81 @@ const Form = ({ onCalculate }: FormProps) => {
     formState: { errors, isSubmitting },
   } = useForm();
 
-  // calculate here
-  const onSubmit = (data: any) => {
-    onCalculate([
-      { probability: 20, risk_level: "ต่ำ", title: "Myocardial Infarction" },
-    ]);
-
-    console.log(data);
-  };
-
   // to get required questions
   const watchDiseaseSelection = watch("diseases_selection");
   // use watch to help style radio buttons
   const watchAll = watch();
 
+  /**
+   * TODO:
+   * - move calculate to /api
+   * - fix type
+   */
+  // calculate here
+  const onSubmit = useCallback(
+    (data: any) => {
+      const dataCamelCase = Object.entries(data).reduce(
+        (acc, [key, value]) => ({
+          ...acc,
+          [snakeToCamel(key)]: value,
+        }),
+        {}
+      );
+      const selectedDiseases: Array<string> = watchDiseaseSelection;
+
+      const results = selectedDiseases.reduce<Array<prediction>>((acc, cur) => {
+        let logit;
+        let title;
+        let description;
+
+        if (cur === "scar") {
+          logit = formula.scar(dataCamelCase);
+          title = "Myocardial Scar";
+          description = "ความน่าจะเป็นที่จะมีแผลเป็นที่กล้ามเนื้อหัวใจ";
+        }
+        if (cur === "cadScar") {
+          logit = formula.cadScar(dataCamelCase);
+          title = "Coronary Artery Disease (CAD)";
+          description = "ความน่าจะเป็นของการโรคหลอดแดงของหัวใจตีบหรือตัน";
+        }
+        if (cur === "lvef40") {
+          logit = formula.lvef40(dataCamelCase);
+          title = "LVEF < 40";
+          description =
+            "ความน่าจะเป็นที่ค่าประสิทธิภาพการทำงานของหัวใจห้องล่างซ้ายต่ำกว่า 40%";
+        }
+        if (cur === "lvef50") {
+          logit = formula.lvef50(dataCamelCase);
+          title = "LVEF < 50";
+          description =
+            "ความน่าจะเป็นที่ค่าประสิทธิภาพการทำงานของหัวใจห้องล่างซ้ายต่ำกว่า 50%";
+        }
+
+        const prob = formula.logitToProb(logit);
+
+        return [
+          ...acc,
+          {
+            title,
+            description,
+            risk_level: getRiskLabel(prob),
+            probability: prob,
+          },
+        ];
+      }, [] as Array<prediction>);
+
+      onCalculate(results);
+    },
+    [onCalculate, watchDiseaseSelection]
+  );
+
   // effect to get questions
   useEffect(() => {
-    const diseases_selection = watchDiseaseSelection;
+    const selectedDiseases = watchDiseaseSelection;
 
-    if (Array.isArray(diseases_selection)) {
+    if (Array.isArray(selectedDiseases)) {
       const questionsSet = new Set<number>(
-        diseases_selection.reduce(
+        selectedDiseases.reduce(
           (acc, cur) => [...acc, ...questionsMap[cur]],
           []
         )

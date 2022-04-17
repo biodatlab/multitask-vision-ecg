@@ -11,7 +11,7 @@ interface PredictionCardProps {
 
 interface ProbabilityBarProps {
   probability: number;
-  average: number;
+  average?: number;
 }
 
 const ProbabilityBar = ({ probability, average }: ProbabilityBarProps) => {
@@ -72,25 +72,29 @@ const ProbabilityBar = ({ probability, average }: ProbabilityBarProps) => {
           {`${Math.round(probability)}%`}
         </Text>
       </Box>
-      {/* average pole */}
-      <Box
-        h={10}
-        w="2px"
-        position="absolute"
-        top={shift - 5 - 1}
-        left={`calc(${average}% - 1px)`}
-        backgroundColor="gray.800"
-      />
-      {/* average label */}
-      <Box
-        position="absolute"
-        top={shift - 3 - 10 + 2}
-        left={`calc(${average}% - 18px)`}
-      >
-        <Text as="span" color="gray.900" fontSize="xs">
-          ค่าเฉลี่ย
-        </Text>
-      </Box>
+      {average && (
+        <>
+          {/* average pole */}
+          <Box
+            h={10}
+            w="2px"
+            position="absolute"
+            top={shift - 5 - 1}
+            left={`calc(${average}% - 1px)`}
+            backgroundColor="gray.800"
+          />
+          {/* average label */}
+          <Box
+            position="absolute"
+            top={shift - 3 - 10 + 2}
+            left={`calc(${average}% - 18px)`}
+          >
+            <Text as="span" color="gray.900" fontSize="xs">
+              ค่าเฉลี่ย
+            </Text>
+          </Box>
+        </>
+      )}
       {/* bottom labels */}
       <Flex
         width="100%"
@@ -118,7 +122,7 @@ const ProbabilityBar = ({ probability, average }: ProbabilityBarProps) => {
   );
 };
 
-const PredictionCard = ({ data }: PredictionCardProps) => {
+export const PredictionCard = ({ data }: PredictionCardProps) => {
   const { title, description, risk_level, probability, average } = data;
 
   return (
@@ -132,7 +136,7 @@ const PredictionCard = ({ data }: PredictionCardProps) => {
       p={6}
     >
       <Flex w="100%" justifyContent="space-between" alignItems="center" mb={4}>
-        <Box>
+        <Box textAlign="left">
           <Heading as="h5" fontSize="2xl" color="secondary.400" mb={1}>
             {title}
           </Heading>

@@ -116,7 +116,11 @@ const lvef50 = ({
   );
 };
 
-const logitToProb = (logit: number) => {
+const logitToProb = (logit: number | undefined) => {
+  if (logit === undefined) {
+    return 0;
+  }
+
   return Math.round((1 / (1 + Math.exp(-logit))) * 100);
 };
 

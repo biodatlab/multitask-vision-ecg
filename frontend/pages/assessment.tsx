@@ -1,8 +1,13 @@
-import { Box, Container, Heading, Text } from "@chakra-ui/react";
+import { Box, Container, Heading, Stack, Text, VStack } from "@chakra-ui/react";
+import { useState } from "react";
 import Form from "../components/assessment/form";
+import { PredictionCard } from "../components/ecg/prediction";
 import Layout from "../components/layout";
+import { prediction } from "./ecg";
 
 const Assessment = () => {
+  const [results, setResults] = useState<Array<prediction>>([]);
+
   return (
     <Layout>
       <Box my={12}>
@@ -59,9 +64,37 @@ const Assessment = () => {
           px={14}
           mx="auto"
         >
-          <Form onCalculate={(results) => console.log(results)} />
+          <Form onCalculate={(r) => setResults(r)} />
         </Box>
       </Box>
+
+      {results.length > 0 && (
+        <Box position="relative" textAlign="center" py={10}>
+          <Box
+            position="absolute"
+            top={0}
+            left={0}
+            marginLeft="calc(50% - 50vw)"
+            w="100vw"
+            h="100%"
+            backgroundColor="white"
+          />
+          <Container maxW="container.lg" position="relative">
+            <Stack direction="column" gap={4} mt={10} alignItems="flex-start">
+              <Heading as="h4" fontSize="2xl" color="secondary.400" mb={6}>
+                ผลการคำนวณ
+              </Heading>
+              <Box w="100%">
+                <VStack gap={8}>
+                  {results.map((data) => (
+                    <PredictionCard key={data.title} data={data} />
+                  ))}
+                </VStack>
+              </Box>
+            </Stack>
+          </Container>
+        </Box>
+      )}
 
       {/* hacky back faint secondary bg */}
       <Box
@@ -71,7 +104,7 @@ const Assessment = () => {
         left={0}
         width="100vw"
         height="100vh"
-        background="secondary.50"
+        background="secondary.100"
       />
     </Layout>
   );

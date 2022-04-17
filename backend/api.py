@@ -15,15 +15,33 @@ MODEL_DICT = {
     "lvef50": "models/lvef50_model.pkl",
 }
 MODELS = {k: load_learner_path(v) for k, v in MODEL_DICT.items()}
-BARS = {"scar": ["ไม่มี", "มี"], "lvef40": ["≥ 40", "< 40"], "lvef50": ["≥ 50", "< 50"]}
-OUTPUT_MAP = {
-    "Normal": "ไม่มีแผลเป็น",
-    "Abnormal": "มีแผลเป็น",
-    "geq_40": "LVEF ≥ 40",
-    "leq_40": "LVEF < 40",
-    "geq_50": "LVEF ≥ 50",
-    "leq_50": "LVEF < 50",
+TITLE_DESC_MAP = {
+    "scar": {
+        "title": "Myocardial Scar",
+        "description": "ความน่าจะเป็นที่จะมีแผลเป็นในกล้ามเนื้อหัวใจ",
+        "average": 47.62
+    },
+    "lvef40": {
+        "title": "LVEF < 40",
+        "description": "ความน่าจะเป็นที่ค่าประสิทธิภาพการบีบตัวของหัวใจห้องล่างซ้ายต่ำกว่า 40%",
+        "average": 59.47
+    },
+    "lvef50": {
+        "title": "LVEF < 50",
+        "description": "ความน่าจะเป็นที่ค่าประสิทธิภาพการบีบตัวของหัวใจห้องล่างซ้ายต่ำกว่า 50%",
+        "average": 59.47
+    }
 }
+
+
+def calculate_risk_level(prob):
+    """Calculate probability to risk level"""
+    if prob < 30:
+        return "ต่ำ"
+    elif prob >= 30 and prob < 70:
+        return "ปานกลาง"
+    else:
+        return "สูง"
 
 
 app = FastAPI()
@@ -66,21 +84,15 @@ async def predict(file: UploadFile = File(...)):
         prediction_output = []
         for model_name in tqdm(["scar", "lvef40", "lvef50"]):
             pred = predict_array(MODELS[model_name], image)
-            if BARS.get(model_name) is not None:
-                label_lt = BARS[model_name][0]
-                label_rt = BARS[model_name][1]
-            else:
-                label_lt, label_rt = "", ""
-            prediction_output.append(
-                {
-                    "prediction_title": OUTPUT_MAP.get(pred["class"]),
-                    "score": pred["proba"][0]
-                    if model_name == "scar"
-                    else pred["proba"][1],
-                    "labelLt": label_lt,
-                    "labelRt": label_rt,
-                }
-            )
+            title_desc = TITLE_DESC_MAP.get(model_name)
+            probability = pred["proba"][0] * 100
+            prediction_output.append({
+                "title": title_desc["title"],
+                "description": title_desc["description"],
+                "average": title_desc["average"],
+                "probability": probability,
+                "risk_level": calculate_risk_level(probability)
+            })
         return JSONResponse(status_code=status.HTTP_200_OK, content=prediction_output)
     except Exception as e:
         print("Error in prediction:", e)

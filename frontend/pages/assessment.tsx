@@ -2,6 +2,8 @@ import {
   Box,
   Code,
   Container,
+  Grid,
+  GridItem,
   Heading,
   Stack,
   Text,
@@ -102,11 +104,19 @@ const Assessment = () => {
                   ผลการคำนวณ
                 </Heading>
                 <Box w="100%">
-                  <VStack gap={8}>
+                  <Grid
+                    templateColumns={{
+                      base: "repeat(1, 1fr)",
+                      lg: "repeat(2, 1fr)",
+                    }}
+                    gap={6}
+                  >
                     {results.map((data) => (
-                      <PredictionCard key={data.title} data={data} />
+                      <GridItem key={data.title}>
+                        <PredictionCard data={data} />
+                      </GridItem>
                     ))}
-                  </VStack>
+                  </Grid>
                 </Box>
               </Stack>
             </Container>

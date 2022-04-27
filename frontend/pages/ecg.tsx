@@ -102,7 +102,8 @@ const Ecg: NextPage = () => {
           <Box mb={-12}>
             <Box mb={16}>
               <Prediction predictionResult={result} />
-              <Box maxW="md" pt={6} mx="auto">
+
+              <Box pt={6} textAlign="center">
                 <Text fontSize="xs">
                   <Text as="span" fontWeight="semibold">
                     หมายเหตุ:&nbsp;

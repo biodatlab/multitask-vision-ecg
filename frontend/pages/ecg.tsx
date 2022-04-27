@@ -59,10 +59,22 @@ const Ecg: NextPage = () => {
             </Heading>
 
             <Box maxW="container.sm" px={[0, 20]}>
-              <Text mb={8}>
+              <Text mb={6}>
                 AI
                 ทำนายความน่าจะเป็นของการมีรอยแผลเป็นในหัวใจและค่าประสิทธิภาพการทำงานของหัวใจห้องล่างซ้ายจากภาพสแกนคลื่นไฟฟ้าหัวใจ
                 (Electrocardiogram, ECG) แบบ 12 Lead
+              </Text>
+              <Heading as="h6" fontSize="md" color="secondary.400" mb={1}>
+                วิธีใช้งาน
+              </Heading>
+              <Text mb={6}>
+                1. อัปโหลดภาพสแกน ECG ในบริเวณกรอบสี่เหลี่ยม
+                <br />
+                2. กดปุ่ม
+                <Text as="span" color="primary.300" fontWeight={600}>
+                  ทำนายผล
+                </Text>{" "}
+                และรอโมเดลทำนายผล
               </Text>
 
               <Box left={[0, "50%"]} right={[0, "50%"]}>

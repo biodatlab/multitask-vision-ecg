@@ -11,6 +11,31 @@ import {
   VStack,
 } from "@chakra-ui/react";
 
+const header = [
+  "โมเดล",
+  <>
+    ความแม่นยำ
+    <br />
+    (Accuracy)
+  </>,
+  <>
+    ความจำเพาะ
+    <br />
+    (Specificity)
+  </>,
+  <>
+    ความไว
+    <br />
+    (Sensitivity)
+  </>,
+  "AUROC",
+];
+const rows = [
+  ["แผลเป็นในหัวใจ (Mycardial scar)", 80.5, 85.0, 80.5, 89.1],
+  ["LVEF < 40", 89.0, 88.6, 89.0, 92.9],
+  ["LVEF < 50", 84.8, 84.2, 84.8, 90.5],
+];
+
 const ModelDescription = () => {
   return (
     <VStack gap={6} alignItems="flex-start" py={12} pb={16}>
@@ -50,55 +75,56 @@ const ModelDescription = () => {
         <Table variant="simple">
           <Thead>
             <Tr>
-              <Th>โมเดล</Th>
-              <Th isNumeric>
-                ความแม่นยำ
-                <br />
-                (Accuracy)
-              </Th>
-              <Th isNumeric>
-                ความจำเพาะ
-                <br />
-                (Specificity)
-              </Th>
-              <Th isNumeric>
-                ความไว
-                <br />
-                (Sensitivity)
-              </Th>
-              <Th isNumeric>AUROC</Th>
+              {header.map((item, index) => {
+                if (index === 0) {
+                  return <Th key={item.toString()}>{item}</Th>;
+                }
+
+                return (
+                  <Th key={item.toString()} isNumeric>
+                    <Text textAlign="center" color="gray.600">
+                      {item}
+                    </Text>
+                  </Th>
+                );
+              })}
             </Tr>
           </Thead>
           <Tbody>
-            <Tr>
-              <Td>แผลเป็นในหัวใจ (Mycardial scar)</Td>
-              <Td isNumeric>80.5</Td>
-              <Td isNumeric>85.0</Td>
-              <Td isNumeric>80.5</Td>
-              <Td isNumeric>89.1</Td>
-            </Tr>
-            <Tr>
-              <Td>LVEF &lt; 40</Td>
-              <Td isNumeric>89.0</Td>
-              <Td isNumeric>88.6</Td>
-              <Td isNumeric>89.0</Td>
-              <Td isNumeric>92.9</Td>
-            </Tr>
-            <Tr>
-              <Td borderBottom="none">LVEF &lt; 50</Td>
-              <Td borderBottom="none" isNumeric>
-                84.8
-              </Td>
-              <Td borderBottom="none" isNumeric>
-                84.2
-              </Td>
-              <Td borderBottom="none" isNumeric>
-                84.8
-              </Td>
-              <Td borderBottom="none" isNumeric>
-                90.5
-              </Td>
-            </Tr>
+            {rows.map((row, rowsInd) => {
+              return (
+                <Tr key={row[0]}>
+                  {row.map((item, rowInd) => {
+                    if (rowInd === 0) {
+                      return (
+                        <Td
+                          key={item.toString()}
+                          borderBottom={
+                            rowsInd === rows.length - 1 ? "none" : undefined
+                          }
+                        >
+                          {item}
+                        </Td>
+                      );
+                    }
+
+                    return (
+                      <Td
+                        key={item.toString()}
+                        borderBottom={
+                          rowsInd === rows.length - 1 ? "none" : undefined
+                        }
+                        isNumeric
+                      >
+                        <Text textAlign="center" color="gray.600">
+                          {typeof item === "number" ? item.toFixed(1) : item}
+                        </Text>
+                      </Td>
+                    );
+                  })}
+                </Tr>
+              );
+            })}
           </Tbody>
         </Table>
       </TableContainer>

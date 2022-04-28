@@ -11,7 +11,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import type { NextPage } from "next";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Dropzone from "../components/ecg/dropzone";
 import ModelDescription from "../components/ecg/modelDescription";
 import Prediction from "../components/ecg/prediction";
@@ -30,6 +30,8 @@ export type predictionResult = Array<prediction> | { error: string } | null;
 const Ecg: NextPage = () => {
   const [result, setResult] = useState(null as predictionResult);
   const [isLoadingResult, setIsLoadingResult] = useState(false);
+
+  const predictionContainer = useRef<HTMLDivElement>(null);
 
   return (
     <Layout>
@@ -101,6 +103,11 @@ const Ecg: NextPage = () => {
                       })
                       .finally(() => {
                         setIsLoadingResult(false);
+
+                        predictionContainer.current?.scrollIntoView({
+                          behavior: "smooth",
+                          block: "start",
+                        });
                       });
                   }}
                   isLoading={isLoadingResult}
@@ -112,9 +119,9 @@ const Ecg: NextPage = () => {
 
         {/* if prediction result valid */}
         {result && Array.isArray(result) && (
-          <Box mb={-12}>
+          <Box ref={predictionContainer} mb={-12}>
             <Box mb={16}>
-              <Stack direction="column" gap={4} mt={10}>
+              <Stack direction="column" gap={4} pt={10}>
                 <Heading as="h4" fontSize="2xl" color="secondary.400" mb={6}>
                   ผลทำนาย
                 </Heading>

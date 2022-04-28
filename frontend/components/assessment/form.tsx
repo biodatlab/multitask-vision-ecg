@@ -88,9 +88,10 @@ const WrappedRadio = forwardRef<
 // -- MAIN
 interface FormProps {
   onCalculate: (results: Array<prediction>) => void;
+  isCalculating: boolean;
 }
 
-const Form = ({ onCalculate }: FormProps) => {
+const Form = ({ onCalculate, isCalculating }: FormProps) => {
   const {
     register,
     handleSubmit,
@@ -298,7 +299,7 @@ const Form = ({ onCalculate }: FormProps) => {
               mt={4}
               colorScheme="primary"
               backgroundColor="primary.300"
-              isLoading={isSubmitting}
+              isLoading={isSubmitting || isCalculating}
               type="submit"
             >
               คำนวณความเสี่ยง

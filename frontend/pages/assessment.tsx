@@ -1,13 +1,16 @@
 import {
   Box,
+  Button,
   Code,
   Container,
+  Flex,
   Heading,
   Stack,
   Text,
   VStack,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { BiRevision } from "react-icons/bi";
 import Form from "../components/assessment/form";
 import Prediction from "../components/ecg/prediction";
 import Layout from "../components/layout";
@@ -22,6 +25,10 @@ const CodeProps = {
 
 const Assessment = () => {
   const [results, setResults] = useState<Array<prediction>>([]);
+  const [calculating, setCalculating] = useState(false);
+
+  const formContainer = useRef<HTMLDivElement>(null);
+  const predictionContainer = useRef<HTMLDivElement>(null);
 
   return (
     <Layout>
@@ -71,6 +78,7 @@ const Assessment = () => {
 
         {/* questions form */}
         <Box
+          ref={formContainer}
           maxW="2xl"
           backgroundColor="white"
           borderRadius="2xl"
@@ -79,7 +87,23 @@ const Assessment = () => {
           px={14}
           mx="auto"
         >
-          <Form onCalculate={(r) => setResults(r)} />
+          <Form
+            onCalculate={(r) => {
+              setCalculating(true);
+
+              // mock loading behavior
+              setTimeout(() => {
+                setCalculating(false);
+                setResults(r);
+
+                predictionContainer.current?.scrollIntoView({
+                  behavior: "smooth",
+                  block: "start",
+                });
+              }, 555);
+            }}
+            isCalculating={calculating}
+          />
         </Box>
       </Box>
 
@@ -96,8 +120,8 @@ const Assessment = () => {
               h="100%"
               backgroundColor="white"
             />
-            <Box position="relative">
-              <Stack direction="column" gap={4} mt={10} alignItems="flex-start">
+            <Box ref={predictionContainer} position="relative">
+              <Stack direction="column" gap={4} pt={10} alignItems="flex-start">
                 <Heading as="h4" fontSize="2xl" color="secondary.400" mb={6}>
                   ผลการคำนวณ
                 </Heading>
@@ -105,7 +129,7 @@ const Assessment = () => {
               </Stack>
 
               <Box w="100%">
-                <Box pt={6} textAlign="center">
+                <Box textAlign="center" pt={6} mb={8}>
                   <Text fontSize="xs">
                     <Text as="span" fontWeight="semibold">
                       หมายเหตุ:&nbsp;
@@ -114,6 +138,23 @@ const Assessment = () => {
                     ไม่สามารถใช้ผลลัพธ์แทนแพทย์ผู้เชี่ยวชาญได้
                   </Text>
                 </Box>
+
+                <Flex justify="end">
+                  <Button
+                    colorScheme="secondary"
+                    bg="secondary.400"
+                    leftIcon={<BiRevision />}
+                    px={3}
+                    onClick={() => {
+                      formContainer.current?.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start",
+                      });
+                    }}
+                  >
+                    ทำแบบประเมินอีกครั้ง
+                  </Button>
+                </Flex>
               </Box>
             </Box>
           </Box>

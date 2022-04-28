@@ -10,12 +10,19 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
+import dynamic from "next/dynamic";
 import { useRef, useState } from "react";
 import { BiRevision } from "react-icons/bi";
 import Form from "../components/assessment/form";
-import Prediction from "../components/shared/prediction";
 import Layout from "../components/layout";
+import Prediction from "../components/shared/prediction";
 import { prediction } from "./ecg";
+
+// -- DYNAMIC IMPORT
+const DownloadResultButton = dynamic(
+  () => import("../components/shared/downloadResultButton"),
+  { ssr: false }
+);
 
 const StyledCode = (props: CodeProps) => (
   <Code w="100%" bg="white" borderRadius="xl" p={6} {...props} />
@@ -107,9 +114,15 @@ const Assessment = () => {
             />
             <Box ref={predictionContainer} position="relative">
               <Stack direction="column" gap={4} pt={10} alignItems="flex-start">
-                <Heading as="h4" fontSize="2xl" color="secondary.400" mb={6}>
-                  ผลการคำนวณ
-                </Heading>
+                <Flex w="100%" justify="space-between" align="center" mb={6}>
+                  <Heading as="h4" fontSize="2xl" color="secondary.400">
+                    ผลการคำนวณ
+                  </Heading>
+                  {/* TODO: fix loading order properly */}
+                  <DownloadResultButton
+                    targetRef={predictionContainer.current}
+                  />
+                </Flex>
                 <Prediction predictionResult={results} />
               </Stack>
 

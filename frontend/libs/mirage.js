@@ -66,6 +66,10 @@ export function makeServer({ environment = "test" } = {}) {
           return true;
         }
 
+        if (req.url?.includes("/__nextjs")) {
+          return true;
+        }
+
         if (req.url?.includes("/assessment")) {
           return true;
         }

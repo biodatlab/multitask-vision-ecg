@@ -75,16 +75,7 @@ const Assessment = () => {
         </Box>
 
         {/* questions form */}
-        <Box
-          ref={formContainer}
-          maxW="2xl"
-          backgroundColor="white"
-          borderRadius="2xl"
-          boxShadow="lg"
-          py={10}
-          px={14}
-          mx="auto"
-        >
+        <Box ref={formContainer} maxW="2xl" mx="auto">
           <Form
             onCalculate={() => setCalculating(true)}
             onResult={(results) => {

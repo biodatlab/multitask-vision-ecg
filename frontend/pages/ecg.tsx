@@ -11,12 +11,20 @@ import {
   Text,
 } from "@chakra-ui/react";
 import type { NextPage } from "next";
+import dynamic from "next/dynamic";
 import { useRef, useState } from "react";
 import Dropzone from "../components/ecg/dropzone";
 import ModelDescription from "../components/ecg/modelDescription";
-import Prediction from "../components/shared/prediction";
 import Layout from "../components/layout";
+import Prediction from "../components/shared/prediction";
 
+// -- DYNAMIC IMPORT
+const DownloadResultButton = dynamic(
+  () => import("../components/shared/downloadResultButton"),
+  { ssr: false }
+);
+
+// -- TYPES
 export interface prediction {
   title: string;
   description?: string;
@@ -27,11 +35,13 @@ export interface prediction {
 
 export type predictionResult = Array<prediction> | { error: string } | null;
 
+// -- MAIN
 const Ecg: NextPage = () => {
   const [result, setResult] = useState(null as predictionResult);
   const [isLoadingResult, setIsLoadingResult] = useState(false);
 
   const predictionContainer = useRef<HTMLDivElement>(null);
+  const resultImageContainer = useRef<HTMLDivElement>(null);
 
   return (
     <Layout>
@@ -120,11 +130,16 @@ const Ecg: NextPage = () => {
         {/* if prediction result valid */}
         {result && Array.isArray(result) && (
           <Box ref={predictionContainer} mb={-12}>
-            <Box mb={16}>
+            <Box ref={resultImageContainer} mb={16}>
               <Stack direction="column" gap={4} pt={10}>
-                <Heading as="h4" fontSize="2xl" color="secondary.400" mb={6}>
-                  ผลทำนาย
-                </Heading>
+                <Flex justify="space-between" align="center" mb={6}>
+                  <Heading as="h4" fontSize="2xl" color="secondary.400">
+                    ผลทำนาย
+                  </Heading>
+                  <DownloadResultButton
+                    targetRef={resultImageContainer.current}
+                  />
+                </Flex>
                 <Prediction predictionResult={result} />
               </Stack>
 

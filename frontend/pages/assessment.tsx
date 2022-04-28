@@ -2,8 +2,6 @@ import {
   Box,
   Code,
   Container,
-  Grid,
-  GridItem,
   Heading,
   Stack,
   Text,
@@ -11,7 +9,7 @@ import {
 } from "@chakra-ui/react";
 import { useState } from "react";
 import Form from "../components/assessment/form";
-import { PredictionCard } from "../components/ecg/prediction";
+import Prediction from "../components/ecg/prediction";
 import Layout from "../components/layout";
 import { prediction } from "./ecg";
 
@@ -103,24 +101,21 @@ const Assessment = () => {
                 <Heading as="h4" fontSize="2xl" color="secondary.400" mb={6}>
                   ผลการคำนวณ
                 </Heading>
-                <Box w="100%">
-                  <Grid
-                    templateColumns={{
-                      base: "repeat(1, 1fr)",
-                      lg: "repeat(2, 1fr)",
-                    }}
-                    gap={6}
-                  >
-                    {results.map((data) => (
-                      <GridItem key={data.title}>
-                        <PredictionCard data={data} />
-                      </GridItem>
-                    ))}
-                  </Grid>
-                </Box>
+                <Prediction predictionResult={results} />
               </Stack>
-            </Container>
-          </Box>
+
+              <Box w="100%">
+                <Box pt={6} textAlign="center">
+                  <Text fontSize="xs">
+                    <Text as="span" fontWeight="semibold">
+                      หมายเหตุ:&nbsp;
+                    </Text>
+                    ผลการทำนายเป็นการประมาณจากโมเดลเพื่อใช้เป็นการประเมินเบื้องต้นสำหรับการรักษาเท่านั้น
+                    ไม่สามารถใช้ผลลัพธ์แทนแพทย์ผู้เชี่ยวชาญได้
+                  </Text>
+                </Box>
+              </Box>
+            </Box>
           {/* model description */}
           <Box>
             <Container maxW="container.lg">

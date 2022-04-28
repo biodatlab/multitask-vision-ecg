@@ -5,7 +5,6 @@ import {
   GridItem,
   Heading,
   Spacer,
-  Stack,
   Text,
 } from "@chakra-ui/react";
 import { prediction, predictionResult } from "../../pages/ecg";
@@ -199,21 +198,16 @@ const Prediction = ({ predictionResult }: PredictionProps) => {
   }
 
   return (
-    <Stack direction="column" gap={4} mt={10}>
-      <Heading as="h4" fontSize="2xl" color="secondary.400" mb={6}>
-        ผลทำนาย
-      </Heading>
-      <Grid
-        templateColumns={{ base: "repeat(1, 1fr)", lg: "repeat(2, 1fr)" }}
-        gap={6}
-      >
-        {predictionResult.map((data) => (
-          <GridItem key={data.title}>
-            <PredictionCard data={data} />
-          </GridItem>
-        ))}
-      </Grid>
-    </Stack>
+    <Grid
+      templateColumns={{ base: "repeat(1, 1fr)", lg: "repeat(2, 1fr)" }}
+      gap={6}
+    >
+      {predictionResult.map((data) => (
+        <GridItem key={data.title}>
+          <PredictionCard data={data} />
+        </GridItem>
+      ))}
+    </Grid>
   );
 };
 

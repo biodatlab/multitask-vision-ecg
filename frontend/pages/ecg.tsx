@@ -7,6 +7,7 @@ import {
   Container,
   Flex,
   Heading,
+  Stack,
   Text,
 } from "@chakra-ui/react";
 import type { NextPage } from "next";
@@ -113,7 +114,12 @@ const Ecg: NextPage = () => {
         {result && Array.isArray(result) && (
           <Box mb={-12}>
             <Box mb={16}>
-              <Prediction predictionResult={result} />
+              <Stack direction="column" gap={4} mt={10}>
+                <Heading as="h4" fontSize="2xl" color="secondary.400" mb={6}>
+                  ผลทำนาย
+                </Heading>
+                <Prediction predictionResult={result} />
+              </Stack>
 
               <Box pt={6} textAlign="center">
                 <Text fontSize="xs">

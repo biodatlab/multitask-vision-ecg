@@ -77,11 +77,11 @@ const ModelDescription = () => {
             <Tr>
               {header.map((item, index) => {
                 if (index === 0) {
-                  return <Th key={item.toString()}>{item}</Th>;
+                  return <Th key={String(Math.random())}>{item}</Th>;
                 }
 
                 return (
-                  <Th key={item.toString()} isNumeric>
+                  <Th key={String(Math.random())} isNumeric>
                     <Text textAlign="center" color="gray.600">
                       {item}
                     </Text>
@@ -93,12 +93,12 @@ const ModelDescription = () => {
           <Tbody>
             {rows.map((row, rowsInd) => {
               return (
-                <Tr key={row[0]}>
+                <Tr key={String(Math.random())}>
                   {row.map((item, rowInd) => {
                     if (rowInd === 0) {
                       return (
                         <Td
-                          key={item.toString()}
+                          key={String(Math.random())}
                           borderBottom={
                             rowsInd === rows.length - 1 ? "none" : undefined
                           }
@@ -110,7 +110,7 @@ const ModelDescription = () => {
 
                     return (
                       <Td
-                        key={item.toString()}
+                        key={String(Math.random())}
                         borderBottom={
                           rowsInd === rows.length - 1 ? "none" : undefined
                         }

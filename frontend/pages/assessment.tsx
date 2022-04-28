@@ -13,7 +13,7 @@ import {
 import { useRef, useState } from "react";
 import { BiRevision } from "react-icons/bi";
 import Form from "../components/assessment/form";
-import Prediction from "../components/ecg/prediction";
+import Prediction from "../components/shared/prediction";
 import Layout from "../components/layout";
 import { prediction } from "./ecg";
 

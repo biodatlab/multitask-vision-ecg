@@ -14,7 +14,7 @@ import type { NextPage } from "next";
 import { useRef, useState } from "react";
 import Dropzone from "../components/ecg/dropzone";
 import ModelDescription from "../components/ecg/modelDescription";
-import Prediction from "../components/ecg/prediction";
+import Prediction from "../components/shared/prediction";
 import Layout from "../components/layout";
 
 export interface prediction {

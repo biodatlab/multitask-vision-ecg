@@ -4,7 +4,7 @@ import "@fontsource/ibm-plex-sans-thai/400.css";
 import "@fontsource/ibm-plex-sans-thai/600.css";
 import type { AppProps } from "next/app";
 import Head from "next/head";
-import { makeServer } from "../libs/mirage";
+import { MirageProvider } from "../contexts/MirageContext";
 import "../styles/globals.css";
 
 const theme = extendTheme({
@@ -62,22 +62,10 @@ const theme = extendTheme({
   },
 });
 
-console.log(
-  `[ECG-APP-DEBUG] process.env.NEXT_PUBLIC_ENABLE_MIRAGE in _app.tsx → "${process.env.NEXT_PUBLIC_ENABLE_MIRAGE}"`
-);
-console.log(
-  `[ECG-APP-DEBUG] process.env.NODE_ENV in _app.tsx → "${process.env.NODE_ENV}"`
-);
-
-if (process.env.NEXT_PUBLIC_ENABLE_MIRAGE === "TRUE") {
-  console.log(`[ECG-APP-DEBUG] mirage server is enabled..`);
-  makeServer({ environment: "development" });
-}
-
 function MyApp({ Component, pageProps }: AppProps) {
   // prettier-ignore
   return (
-    <>
+    <MirageProvider>
       <Head>
         <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png" />
@@ -92,7 +80,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       <ChakraProvider theme={theme}>
         <Component {...pageProps} />
       </ChakraProvider>
-    </>
+    </MirageProvider>
   );
 }
 

@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   Code,
+  CodeProps,
   Container,
   Flex,
   Heading,
@@ -16,12 +17,9 @@ import Prediction from "../components/ecg/prediction";
 import Layout from "../components/layout";
 import { prediction } from "./ecg";
 
-const CodeProps = {
-  w: "100%",
-  backgroundColor: "white",
-  borderRadius: "xl",
-  p: 6,
-};
+const StyledCode = (props: CodeProps) => (
+  <Code w="100%" bg="white" borderRadius="xl" p={6} {...props} />
+);
 
 const Assessment = () => {
   const [results, setResults] = useState<Array<prediction>>([]);
@@ -88,19 +86,15 @@ const Assessment = () => {
           mx="auto"
         >
           <Form
-            onCalculate={(r) => {
-              setCalculating(true);
+            onCalculate={() => setCalculating(true)}
+            onResult={(results) => {
+              setCalculating(false);
+              setResults(results);
 
-              // mock loading behavior
-              setTimeout(() => {
-                setCalculating(false);
-                setResults(r);
-
-                predictionContainer.current?.scrollIntoView({
-                  behavior: "smooth",
-                  block: "start",
-                });
-              }, 555);
+              predictionContainer.current?.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+              });
             }}
             isCalculating={calculating}
           />
@@ -183,50 +177,50 @@ const Assessment = () => {
                   ความน่าจะเป็นของการมีแผลเป็นในกล้ามเนื้อหัวใจ (Myocardial
                   Infarction, MI)
                 </Heading>
-                <Code {...CodeProps}>
+                <StyledCode>
                   logit_scar = (-1.253690 + (-1.289421 * female) + (1.267990*
                   history_mi) + (0.852316 * history_ptca_cabg) + (1.188963 *
                   history_cad) + (0.875971 * history_hf) + (0.394268 *
                   history_ckd))
-                </Code>
+                </StyledCode>
 
                 <Heading as="h6" fontWeight="semibold" fontSize="md">
                   ความน่าจะเป็นของการเป็นโรคหลอดเลือดหัวใจตีบหรือตัน (Coronary
                   Artery Disease, CAD)
                 </Heading>
-                <Code {...CodeProps}>
+                <StyledCode>
                   logit_cad_scar = (-1.838088 + (-1.257548 * female) + (0.290813
                   * diabetes_mellitus) + (1.428430 * history_mi). +(0.915726 *
                   history_ptca_cabg) + (1.477169 * history_cad) + (0.519559 *
                   history_hf) + (0.359040 * history_ckd))
-                </Code>
+                </StyledCode>
 
                 <Heading as="h6" fontWeight="semibold" fontSize="md">
                   ความน่าจะเป็นที่ประสิทธิภาพการบีบตัวหัวใจห้องล่างซ้ายตำ่กว่า
                   40% (LVEF &lt; 40)
                 </Heading>
-                <Code {...CodeProps}>
+                <StyledCode>
                   logit_lvef40 = (-1.986239 + (-0.573404 * age_above_65) +
                   (-0.537664 * female) + (-0.771137 * bmi_above_25) + (-0.533213
                   * hypertension) + (0.714925 * history_cad) + (2.065291 *
                   history_hf) + (0.619290 * history_ckd))
-                </Code>
+                </StyledCode>
 
                 <Heading as="h6" fontWeight="semibold" fontSize="md">
                   ความน่าจะเป็นที่ประสิทธิภาพการบีบตัวหัวใจห้องล่างซ้ายตำ่กว่า
                   50% (LVEF &lt; 50)
                 </Heading>
-                <Code {...CodeProps}>
+                <StyledCode>
                   logit_lvef50 = (-1.468317 + (-0.438355 * age_above_65) +
                   (-0.797398 * female) + (-0.3547618 * bmi_above_25) +
                   (-0.350557 * hypertension) + (0.534031 * history_mi) +
                   (0.787748 * history_cad) + (1.831592 * history_hf))
-                </Code>
+                </StyledCode>
 
                 <Heading as="h6" fontWeight="semibold" fontSize="md">
                   เมื่อได้ Logit มาแล้ว นำไปคำนวณหาความน่าจะเป็นจากสูตร
                 </Heading>
-                <Code {...CodeProps}>probability = 1 / (1 + exp(-logit))</Code>
+                <StyledCode>probability = 1 / (1 + exp(-logit))</StyledCode>
               </VStack>
             </VStack>
           </Box>

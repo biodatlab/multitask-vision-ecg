@@ -40,17 +40,17 @@ export function makeServer({ environment = "test" } = {}) {
 
       this.post("/predict", () => {
         return ["scar", "lvef40", "lvef50"].map((modelName) => {
-          const probability = Math.floor(Math.random() * 100)
+          const probability = Math.floor(Math.random() * 100);
           const titleDesc = TITLE_DESC_MAP[modelName];
 
           return {
-            "title": titleDesc.title,
-            "description": titleDesc.description,
-            "average": titleDesc.average,
-            "probability": probability,
-            "risk_level": calculateRiskLevel(probability)
-          }
-        })
+            title: titleDesc.title,
+            description: titleDesc.description,
+            average: titleDesc.average,
+            probability: probability,
+            risk_level: calculateRiskLevel(probability),
+          };
+        });
       });
 
       /**
@@ -63,6 +63,10 @@ export function makeServer({ environment = "test" } = {}) {
       // method 2
       this.passthrough((req) => {
         if (req.url?.includes("/_next/")) {
+          return true;
+        }
+
+        if (req.url?.includes("/assessment")) {
           return true;
         }
       });

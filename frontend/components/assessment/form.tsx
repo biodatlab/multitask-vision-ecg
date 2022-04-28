@@ -21,7 +21,6 @@ import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import assessmentQuestions from "../../data/assessmentQuestions.json";
 import type { prediction } from "../../pages/ecg";
-import formula from "../../data/formula";
 
 // -- CONSTANTS
 const questionsMap: { [index: string]: number[] } = {
@@ -40,21 +39,6 @@ const defaultQuestions = Object.entries(assessmentQuestions).map(
 type InferredQuestionType = Omit<typeof allQuestions["1"], "choices"> & {
   choices: never[] | string[];
 };
-
-// -- FUNCTIONS
-const getRiskLabel = (percent: number) => {
-  if (percent < 30) {
-    return "ต่ำ";
-  }
-
-  if (percent >= 30 && percent < 70) {
-    return "ปานกลาง";
-  }
-
-  return "สูง";
-};
-const snakeToCamel = (str: string): string =>
-  str.toLowerCase().replace(/(_\w)/g, (m) => m.toUpperCase().substr(1));
 
 // -- WRAPPED COMPONENTS
 const WrappedRadio = forwardRef<
@@ -87,11 +71,12 @@ const WrappedRadio = forwardRef<
 
 // -- MAIN
 interface FormProps {
-  onCalculate: (results: Array<prediction>) => void;
+  onCalculate: () => void;
+  onResult: (results: Array<prediction>) => void;
   isCalculating: boolean;
 }
 
-const Form = ({ onCalculate, isCalculating }: FormProps) => {
+const Form = ({ onCalculate, onResult, isCalculating }: FormProps) => {
   const {
     register,
     handleSubmit,
@@ -104,67 +89,34 @@ const Form = ({ onCalculate, isCalculating }: FormProps) => {
   // use watch to help style radio buttons
   const watchAll = watch();
 
-  /**
-   * TODO:
-   * - move calculate to /api
-   * - fix type
-   */
   // calculate here
   const onSubmit = useCallback(
-    (data: any) => {
-      const dataCamelCase = Object.entries(data).reduce(
-        (acc, [key, value]) => ({
-          ...acc,
-          [snakeToCamel(key)]: value,
-        }),
-        {}
-      );
+    (data: { [key: string]: number }) => {
+      // set isCalculating outside
+      onCalculate();
+
       const selectedDiseases: Array<string> = watchDiseaseSelection;
 
-      const results = selectedDiseases.reduce<Array<prediction>>((acc, cur) => {
-        let logit;
-        let title;
-        let description;
-
-        if (cur === "scar") {
-          logit = formula.scar(dataCamelCase);
-          title = "Myocardial Scar";
-          description = "ความน่าจะเป็นที่จะมีแผลเป็นที่กล้ามเนื้อหัวใจ";
-        }
-        if (cur === "cadScar") {
-          logit = formula.cadScar(dataCamelCase);
-          title = "Coronary Artery Disease (CAD)";
-          description = "ความน่าจะเป็นของการโรคหลอดแดงของหัวใจตีบหรือตัน";
-        }
-        if (cur === "lvef40") {
-          logit = formula.lvef40(dataCamelCase);
-          title = "LVEF < 40";
-          description =
-            "ความน่าจะเป็นที่ค่าประสิทธิภาพการทำงานของหัวใจห้องล่างซ้ายต่ำกว่า 40%";
-        }
-        if (cur === "lvef50") {
-          logit = formula.lvef50(dataCamelCase);
-          title = "LVEF < 50";
-          description =
-            "ความน่าจะเป็นที่ค่าประสิทธิภาพการทำงานของหัวใจห้องล่างซ้ายต่ำกว่า 50%";
-        }
-
-        const prob = formula.logitToProb(logit);
-
-        return [
-          ...acc,
-          {
-            title,
-            description,
-            risk_level: getRiskLabel(prob),
-            probability: prob,
-          },
-        ];
-      }, [] as Array<prediction>);
-
-      onCalculate(results);
+      // fetch result from /api route
+      fetch("/api/assessment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          selectedDiseases,
+          data,
+        }),
+      })
+        .then((res) => res.json())
+        .then((resJson) => {
+          // mock processing behavior
+          setTimeout(() => {
+            onResult(resJson);
+          }, 555);
+        });
     },
-    [onCalculate, watchDiseaseSelection]
+    [onCalculate, onResult, watchDiseaseSelection]
   );
 
   // effect to get questions

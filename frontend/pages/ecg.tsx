@@ -54,7 +54,7 @@ const Ecg: NextPage = () => {
             top={0}
             left={0}
             w="100%"
-            h="29.5em"
+            h={{ base: "40em", md: "29.5em" }}
             backgroundColor="secondary.50"
           />
           <Container maxW="container.sm" position="relative">

@@ -49,7 +49,8 @@ const ApplicationPanel = ({
         background={hovered ? "secondary.50" : undefined}
         boxShadow="lg"
         p={6}
-        cursor="default"
+        cursor="pointer"
+        onClick={() => router.push(target)}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
@@ -79,7 +80,6 @@ const ApplicationPanel = ({
             rightIcon={
               <Icon as={BiRightArrowAlt} color="primary.300" fontSize={20} />
             }
-            onClick={() => router.push(target)}
           >
             ใช้งาน
           </Button>

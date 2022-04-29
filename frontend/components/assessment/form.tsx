@@ -6,6 +6,7 @@ import {
   Divider,
   Flex,
   FormControl,
+  FormErrorMessage,
   FormLabel,
   forwardRef,
   Heading,
@@ -15,15 +16,17 @@ import {
   RadioGroup,
   RadioProps,
   StackDivider,
+  Text,
+  TextProps,
   VStack,
 } from "@chakra-ui/react";
-import { useCallback, useEffect, useState } from "react";
+import React, { ReactNode, useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import assessmentQuestions from "../../data/assessmentQuestions.json";
 import type { prediction } from "../../pages/ecg";
-import formula from "../../data/formula";
 
 // -- CONSTANTS
+const thisYear = new Date().getFullYear() + 543;
 const questionsMap: { [index: string]: number[] } = {
   scar: [2, 4, 7, 8, 9, 10, 11],
   cadScar: [2, 5, 7, 8, 9, 11],
@@ -41,33 +44,21 @@ type InferredQuestionType = Omit<typeof allQuestions["1"], "choices"> & {
   choices: never[] | string[];
 };
 
-// -- FUNCTIONS
-const getRiskLabel = (percent: number) => {
-  if (percent < 30) {
-    return "ต่ำ";
-  }
-
-  if (percent >= 30 && percent < 70) {
-    return "ปานกลาง";
-  }
-
-  return "สูง";
-};
-const snakeToCamel = (str: string): string =>
-  str.toLowerCase().replace(/(_\w)/g, (m) => m.toUpperCase().substr(1));
-
 // -- WRAPPED COMPONENTS
 const WrappedRadio = forwardRef<
-  { radioProps: RadioProps; customProps: { checked: boolean } },
+  {
+    radioProps: RadioProps;
+    customProps: { checked: boolean; error: any | undefined | null };
+  },
   "div"
 >(({ radioProps, customProps }, ref) => (
   <Box
     w={24}
     backgroundColor={customProps.checked ? "secondary.50" : undefined}
     borderRadius="xl"
-    borderWidth="1px"
+    borderWidth={customProps.error ? "2px" : "1px"}
     borderStyle="solid"
-    borderColor="gray.200"
+    borderColor={customProps.error ? "red.500" : "gray.200"}
     p={2}
     pl={3}
   >
@@ -85,12 +76,67 @@ const WrappedRadio = forwardRef<
   </Box>
 ));
 
+// Disease Emphasized Text
+const DE = (props: TextProps) => <Text as="b" {...props} />;
+
+// -- FUNCTION
+const emphasizeDiseaseText = (
+  rawText: string
+): Array<ReactNode> | undefined => {
+  if (!rawText) {
+    return undefined;
+  }
+
+  /**
+   * @see https://regexr.com/3fcqh
+   */
+  const boldTexts = Array.from(
+    rawText.matchAll(/\*{2}((?=[^\s\*]).*?[^\s\*])\*{2}/g)
+  );
+  const positions = boldTexts.map(([raw, noSymbol]) => {
+    const start = rawText.indexOf(raw);
+    const end = start + raw.length;
+
+    return { start, end, text: noSymbol };
+  });
+
+  let composed = [];
+
+  if (positions.length === 0) {
+    composed.push(rawText);
+    return composed;
+  }
+
+  // construct text nodes
+  let movingIndex = 0;
+
+  for (let i = 0; i < positions.length; i++) {
+    const { start, end, text } = positions[i];
+    const textBefore = rawText.slice(movingIndex, start);
+
+    composed.push(
+      <React.Fragment key={textBefore + i}>{textBefore}</React.Fragment>
+    );
+    composed.push(<DE key={text + i}>{text}</DE>);
+    movingIndex = end;
+
+    if (i === positions.length - 1) {
+      const textAfter = rawText.slice(end);
+      composed.push(textAfter);
+    }
+  }
+
+  return composed;
+};
+
 // -- MAIN
 interface FormProps {
-  onCalculate: (results: Array<prediction>) => void;
+  onCalculate: () => void;
+  onResult: (results: Array<prediction>) => void;
+  isCalculating: boolean;
 }
 
-const Form = ({ onCalculate }: FormProps) => {
+const Form = ({ onCalculate, onResult, isCalculating }: FormProps) => {
   const {
     register,
     handleSubmit,
@@ -103,67 +149,34 @@ const Form = ({ onCalculate }: FormProps) => {
   // use watch to help style radio buttons
   const watchAll = watch();
 
-  /**
-   * TODO:
-   * - move calculate to /api
-   * - fix type
-   */
   // calculate here
   const onSubmit = useCallback(
-    (data: any) => {
-      const dataCamelCase = Object.entries(data).reduce(
-        (acc, [key, value]) => ({
-          ...acc,
-          [snakeToCamel(key)]: value,
-        }),
-        {}
-      );
+    (data: { [key: string]: number }) => {
+      // set isCalculating outside
+      onCalculate();
+
       const selectedDiseases: Array<string> = watchDiseaseSelection;
 
-      const results = selectedDiseases.reduce<Array<prediction>>((acc, cur) => {
-        let logit;
-        let title;
-        let description;
-
-        if (cur === "scar") {
-          logit = formula.scar(dataCamelCase);
-          title = "Myocardial Scar";
-          description = "ความน่าจะเป็นที่จะมีแผลเป็นที่กล้ามเนื้อหัวใจ";
-        }
-        if (cur === "cadScar") {
-          logit = formula.cadScar(dataCamelCase);
-          title = "Coronary Artery Disease (CAD)";
-          description = "ความน่าจะเป็นของการโรคหลอดแดงของหัวใจตีบหรือตัน";
-        }
-        if (cur === "lvef40") {
-          logit = formula.lvef40(dataCamelCase);
-          title = "LVEF < 40";
-          description =
-            "ความน่าจะเป็นที่ค่าประสิทธิภาพการทำงานของหัวใจห้องล่างซ้ายต่ำกว่า 40%";
-        }
-        if (cur === "lvef50") {
-          logit = formula.lvef50(dataCamelCase);
-          title = "LVEF < 50";
-          description =
-            "ความน่าจะเป็นที่ค่าประสิทธิภาพการทำงานของหัวใจห้องล่างซ้ายต่ำกว่า 50%";
-        }
-
-        const prob = formula.logitToProb(logit);
-
-        return [
-          ...acc,
-          {
-            title,
-            description,
-            risk_level: getRiskLabel(prob),
-            probability: prob,
-          },
-        ];
-      }, [] as Array<prediction>);
-
-      onCalculate(results);
+      // fetch result from /api route
+      fetch("/api/assessment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          selectedDiseases,
+          data,
+        }),
+      })
+        .then((res) => res.json())
+        .then((resJson) => {
+          // mock processing behavior
+          setTimeout(() => {
+            onResult(resJson);
+          }, 555);
+        });
     },
-    [onCalculate, watchDiseaseSelection]
+    [onCalculate, onResult, watchDiseaseSelection]
   );
 
   // effect to get questions
@@ -189,121 +202,171 @@ const Form = ({ onCalculate }: FormProps) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      {/* disease selection */}
-      <FormControl mb={6}>
-        <FormLabel>
-          <Heading as="h6" fontSize="md" color="secondary.400" mb={6}>
-            กรุณาเลือกภาวะโรคที่ต้องการประเมินความเสี่ยง
-          </Heading>
-        </FormLabel>
-        <CheckboxGroup
-          colorScheme="secondary"
-          defaultValue={["scar", "cadScar", "lvef40", "lvef50"]}
-        >
-          <VStack
-            alignItems="flex-start"
-            sx={{
-              "& .chakra-checkbox__control[data-checked]": {
-                backgroundColor: "secondary.400",
-                borderColor: "secondary.400",
-              },
-            }}
+      {/* disease selection block */}
+      <Box
+        w="100%"
+        backgroundColor="white"
+        borderRadius="2xl"
+        boxShadow="lg"
+        py={10}
+        px={14}
+        mb={6}
+      >
+        <FormControl>
+          <FormLabel>
+            <VStack mb={6} align="start">
+              <Heading as="h6" fontSize="lg" color="secondary.400">
+                แบบประเมินนี้สามารถประเมินภาวะโรคได้หลากหลาย
+              </Heading>
+              <Text as="b" fontSize="sm" color="secondary.400">
+                กรุณาเลือกภาวะโรคที่ต้องการประเมิน
+                โดยที่จำนวนภาวะโรคที่เลือกจะมีผลกับจำนวนข้อคำถามที่จะต้องตอบ
+              </Text>
+            </VStack>
+          </FormLabel>
+          <CheckboxGroup
+            colorScheme="secondary"
+            defaultValue={["scar", "cadScar", "lvef40", "lvef50"]}
           >
-            <Checkbox value="scar" {...register("diseases_selection")}>
-              รอยแผลเป็นในหัวใจ
-            </Checkbox>
-            <Checkbox value="cadScar" {...register("diseases_selection")}>
-              หลอดเลือดแดงของหัวใจตีบหรือตัน
-            </Checkbox>
-            <Checkbox value="lvef40" {...register("diseases_selection")}>
-              ประสิทธิภาพการบีบตัวของหัวใจห้องล่างซ้ายต่ำกว่า 40%
-            </Checkbox>
-            <Checkbox value="lvef50" {...register("diseases_selection")}>
-              ประสิทธิภาพการบีบตัวของหัวใจห้องล่างซ้ายต่ำกว่า 50%
-            </Checkbox>
-          </VStack>
-        </CheckboxGroup>
-      </FormControl>
-
-      {/* question to acquire */}
-      {requiredQuestions?.length > 0 && (
-        <Box>
-          <Heading as="h6" fontSize="md" color="secondary.400" mb={6}>
-            กรุณาตอบคำถามด้านล่างให้ครบ
-            และกดปุ่มคำนวณความเสี่ยงด้านล่างเพื่อรับผลการประเมินความเสี่ยง
-          </Heading>
-
-          <VStack gap={6} divider={<StackDivider borderColor="gray.200" />}>
-            {requiredQuestions.map((value, ind) => {
-              if (value.type === "input") {
-                return (
-                  <FormControl
-                    key={value.key}
-                    isRequired={!value.optional}
-                    isInvalid={errors[value.key]}
-                  >
-                    <FormLabel htmlFor={value.key}>{`${ind + 1}. ${
-                      value.text
-                    }`}</FormLabel>
-                    <Box pl={5}>
-                      <Input
-                        id={value.key}
-                        type="number"
-                        w={24}
-                        {...register(value.key)}
-                      />
-                    </Box>
-                  </FormControl>
-                );
-              }
-
-              if (value.type === "radio") {
-                return (
-                  <FormControl
-                    key={value.key}
-                    isRequired={!value.optional}
-                    isInvalid={errors[value.key]}
-                  >
-                    <FormLabel htmlFor={value.key}>{`${ind + 1}. ${
-                      value.text
-                    }`}</FormLabel>
-                    <RadioGroup pl={5}>
-                      <HStack>
-                        {value.choices.map((choice, ind) => {
-                          return (
-                            <WrappedRadio
-                              key={choice}
-                              customProps={{
-                                checked: watchAll[value.key] === String(ind),
-                              }}
-                              radioProps={{
-                                children: choice,
-                                value: String(ind),
-                                ...register(value.key),
-                              }}
-                            />
-                          );
-                        })}
-                      </HStack>
-                    </RadioGroup>
-                    {/* <FormHelperText>We'll never share your email.</FormHelperText> */}
-                  </FormControl>
-                );
-              }
-            })}
-          </VStack>
-          <Divider borderColor="gray.200" mt={8} />
-          <Flex justifyContent="flex-end" pt={2}>
-            <Button
-              mt={4}
-              colorScheme="primary"
-              backgroundColor="primary.300"
-              isLoading={isSubmitting}
-              type="submit"
+            <VStack
+              alignItems="flex-start"
+              sx={{
+                "& .chakra-checkbox__control[data-checked]": {
+                  backgroundColor: "secondary.400",
+                  borderColor: "secondary.400",
+                },
+              }}
             >
-              คำนวณความเสี่ยง
-            </Button>
-          </Flex>
+              <Checkbox value="scar" {...register("diseases_selection")}>
+                รอยแผลเป็นในหัวใจ
+              </Checkbox>
+              <Checkbox value="cadScar" {...register("diseases_selection")}>
+                หลอดเลือดแดงของหัวใจตีบหรือตัน
+              </Checkbox>
+              <Checkbox value="lvef40" {...register("diseases_selection")}>
+                ประสิทธิภาพการบีบตัวของหัวใจห้องล่างซ้ายต่ำกว่า 40%
+              </Checkbox>
+              <Checkbox value="lvef50" {...register("diseases_selection")}>
+                ประสิทธิภาพการบีบตัวของหัวใจห้องล่างซ้ายต่ำกว่า 50%
+              </Checkbox>
+            </VStack>
+          </CheckboxGroup>
+        </FormControl>
+      </Box>
+
+      {/* question block */}
+      {requiredQuestions?.length > 0 && (
+        <Box
+          w="100%"
+          backgroundColor="white"
+          borderRadius="2xl"
+          boxShadow="lg"
+          py={10}
+          px={14}
+        >
+          <Box>
+            <VStack mb={6} align="start">
+              <Heading as="h6" fontSize="lg" color="grey.800">
+                กรุณาตอบคำถามด้านล่างให้ครบ
+              </Heading>
+              <Text as="b" fontSize="sm" color="secondary.400">
+                กดปุ่มคำนวณความเสี่ยงด้านล่างเพื่อรับผลการประเมินความเสี่ยง
+              </Text>
+            </VStack>
+
+            <VStack gap={6} divider={<StackDivider borderColor="gray.200" />}>
+              {requiredQuestions.map((value, ind) => {
+                if (value.type === "input") {
+                  // implement validation for year_of_birth
+                  let option: { [index: string]: any } = {
+                    required: !value.optional,
+                  };
+
+                  if (value.key === "year_of_birth") {
+                    const thisYear = new Date().getFullYear() + 543;
+
+                    option = {
+                      ...option,
+                      validate: (val: number) =>
+                        val < thisYear && val > thisYear - 120,
+                    };
+                  }
+
+                  return (
+                    <FormControl key={value.key} isInvalid={errors[value.key]}>
+                      <FormLabel htmlFor={value.key}>{`${ind + 1}. ${
+                        value.text
+                      }`}</FormLabel>
+                      <Box pl={5}>
+                        <Input
+                          id={value.key}
+                          type="number"
+                          w={24}
+                          {...register(value.key, option)}
+                        />
+
+                        {/* only displays validation error message for year_of_birth */}
+                        {errors["year_of_birth"]?.type === "validate" && (
+                          <FormErrorMessage>
+                            {`ปีเกิดควรอยู่ในช่วง ${thisYear - 120} - ${
+                              thisYear - 1
+                            }`}
+                          </FormErrorMessage>
+                        )}
+                      </Box>
+                    </FormControl>
+                  );
+                }
+
+                if (value.type === "radio") {
+                  return (
+                    <FormControl key={value.key} isInvalid={errors[value.key]}>
+                      <FormLabel htmlFor={value.key}>
+                        {`${ind + 1}. `}
+                        {emphasizeDiseaseText(value.text)}
+                      </FormLabel>
+                      <RadioGroup pl={5}>
+                        <HStack>
+                          {value.choices.map((choice, ind) => {
+                            return (
+                              <WrappedRadio
+                                key={choice}
+                                customProps={{
+                                  checked: watchAll[value.key] === String(ind),
+                                  error: errors[value.key],
+                                }}
+                                radioProps={{
+                                  children: choice,
+                                  value: String(ind),
+                                  ...register(value.key, {
+                                    required: !value.optional,
+                                  }),
+                                }}
+                              />
+                            );
+                          })}
+                        </HStack>
+                      </RadioGroup>
+                    </FormControl>
+                  );
+                }
+              })}
+            </VStack>
+
+            <Divider borderColor="gray.200" mt={8} />
+
+            <Flex justifyContent="flex-end" pt={2}>
+              <Button
+                mt={4}
+                colorScheme="primary"
+                backgroundColor="primary.300"
+                isLoading={isSubmitting || isCalculating}
+                type="submit"
+              >
+                คำนวณความเสี่ยง
+              </Button>
+            </Flex>
+          </Box>
         </Box>
       )}
     </form>

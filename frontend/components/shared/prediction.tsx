@@ -1,4 +1,12 @@
-import { Box, Flex, Heading, Stack, Text, VStack } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  Grid,
+  GridItem,
+  Heading,
+  Spacer,
+  Text,
+} from "@chakra-ui/react";
 import { prediction, predictionResult } from "../../pages/ecg";
 
 interface PredictionProps {
@@ -19,12 +27,7 @@ const ProbabilityBar = ({ probability, average }: ProbabilityBarProps) => {
   const shift = height / 2 + 4;
 
   return (
-    <Flex
-      maxW={{ base: "100%", md: "77.5%" }}
-      h={height}
-      flex={1}
-      position="relative"
-    >
+    <Flex maxW="100%" h={height} flex={1} position="relative">
       {/* top labels */}
       <Flex
         width="100%"
@@ -32,20 +35,10 @@ const ProbabilityBar = ({ probability, average }: ProbabilityBarProps) => {
         position="absolute"
         top={shift - 3 - 10 + 2}
       >
-        <Text
-          as="span"
-          color="gray.800"
-          fontSize="sm"
-          ml={{ base: -1, md: -9 }}
-        >
+        <Text as="span" color="gray.800" fontSize="xs">
           ความเสี่ยงต่ำ
         </Text>
-        <Text
-          as="span"
-          color="gray.800"
-          fontSize="sm"
-          mr={{ base: -1, md: -9 }}
-        >
+        <Text as="span" color="gray.800" fontSize="xs">
           ความเสี่ยงสูง
         </Text>
       </Flex>
@@ -55,20 +48,31 @@ const ProbabilityBar = ({ probability, average }: ProbabilityBarProps) => {
         w="100%"
         position="absolute"
         top={shift - 4}
-        backgroundColor="gray.100"
+        bgGradient="linear(to-r, secondary.400, primary.300)"
       />
-      {/* gradient bar */}
+      {/* overlay gray bar */}
       <Box
         h={8}
-        w={`${probability}%`}
+        w={`${100 - probability}%`}
         position="absolute"
         top={shift - 4}
-        bgGradient="linear(to-r, #E04586, #FF6651)"
-        borderRightRadius="3xl"
+        right={0}
+        backgroundColor="gray.100"
       />
       {/* inner percent text */}
-      <Box position="absolute" top="53px" right={`${102 - probability}%`}>
-        <Text as="span" color="white" fontSize="md" fontWeight="semibold">
+      <Box
+        position="absolute"
+        top="53px"
+        right={probability > 15 ? `${102 - probability}%` : undefined}
+        left={probability > 15 ? undefined : `${2 + probability}%`}
+        zIndex={2}
+      >
+        <Text
+          as="span"
+          color={probability > 15 ? "white" : "black"}
+          fontSize="md"
+          fontWeight="semibold"
+        >
           {`${Math.round(probability)}%`}
         </Text>
       </Box>
@@ -89,7 +93,7 @@ const ProbabilityBar = ({ probability, average }: ProbabilityBarProps) => {
             top={shift - 3 - 10 + 2}
             left={`calc(${average}% - 18px)`}
           >
-            <Text as="span" color="gray.900" fontSize="xs">
+            <Text as="span" color="gray.900" fontSize={10}>
               ค่าเฉลี่ย
             </Text>
           </Box>
@@ -128,36 +132,58 @@ export const PredictionCard = ({ data }: PredictionCardProps) => {
   return (
     <Flex
       flex={1}
-      w={{ base: "100%", md: "75%", lg: "60%" }}
+      w="100%"
+      h="100%"
+      maxW={{ base: "lg", lg: "100%" }}
       flexDirection="column"
       alignItems="center"
       borderRadius="2xl"
       boxShadow="lg"
       p={6}
+      mx="auto"
     >
       <Flex w="100%" justifyContent="space-between" alignItems="center" mb={4}>
         <Box textAlign="left">
           <Heading as="h5" fontSize="2xl" color="secondary.400" mb={1}>
             {title}
           </Heading>
-          <Text fontSize="sm" maxW="2xs">
+          <Text fontSize="sm" maxW="2xs" pr={2}>
             {description}
           </Text>
         </Box>
         <Box
           textAlign="center"
-          backgroundColor="gray.50"
+          backgroundColor={
+            risk_level === "ปานกลาง"
+              ? "gray.50"
+              : risk_level === "สูง"
+              ? "primary.50"
+              : "secondary.50"
+          }
           borderRadius="lg"
           p={3}
         >
           <Text fontSize="sm" mb={3}>
             ระดับความเสี่ยง
           </Text>
-          <Heading as="h5" fontSize="xl" color="primary.300" mb={1}>
+          <Heading
+            as="h5"
+            fontSize="xl"
+            color={
+              risk_level === "ปานกลาง"
+                ? "gray.600"
+                : risk_level === "สูง"
+                ? "primary.300"
+                : "secondary.400"
+            }
+            mb={1}
+          >
             {risk_level}
           </Heading>
         </Box>
       </Flex>
+
+      <Spacer />
 
       <Flex w="100%" justifyContent="center">
         <ProbabilityBar probability={probability} average={average} />
@@ -172,16 +198,16 @@ const Prediction = ({ predictionResult }: PredictionProps) => {
   }
 
   return (
-    <Stack direction="column" gap={4} mt={10}>
-      <Heading as="h4" fontSize="2xl" color="secondary.400" mb={6}>
-        ผลทำนาย
-      </Heading>
-      <VStack gap={8}>
-        {predictionResult.map((data) => (
-          <PredictionCard key={data.title} data={data} />
-        ))}
-      </VStack>
-    </Stack>
+    <Grid
+      templateColumns={{ base: "repeat(1, 1fr)", lg: "repeat(2, 1fr)" }}
+      gap={6}
+    >
+      {predictionResult.map((data) => (
+        <GridItem key={data.title}>
+          <PredictionCard data={data} />
+        </GridItem>
+      ))}
+    </Grid>
   );
 };
 

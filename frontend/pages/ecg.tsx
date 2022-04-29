@@ -7,15 +7,24 @@ import {
   Container,
   Flex,
   Heading,
+  Stack,
   Text,
 } from "@chakra-ui/react";
 import type { NextPage } from "next";
-import { useState } from "react";
+import dynamic from "next/dynamic";
+import { useRef, useState } from "react";
 import Dropzone from "../components/ecg/dropzone";
 import ModelDescription from "../components/ecg/modelDescription";
-import Prediction from "../components/ecg/prediction";
 import Layout from "../components/layout";
+import Prediction from "../components/shared/prediction";
 
+// -- DYNAMIC IMPORT
+const DownloadResultButton = dynamic(
+  () => import("../components/shared/downloadResultButton"),
+  { ssr: false }
+);
+
+// -- TYPES
 export interface prediction {
   title: string;
   description?: string;
@@ -26,9 +35,13 @@ export interface prediction {
 
 export type predictionResult = Array<prediction> | { error: string } | null;
 
+// -- MAIN
 const Ecg: NextPage = () => {
   const [result, setResult] = useState(null as predictionResult);
   const [isLoadingResult, setIsLoadingResult] = useState(false);
+
+  const predictionContainer = useRef<HTMLDivElement>(null);
+  const resultImageContainer = useRef<HTMLDivElement>(null);
 
   return (
     <Layout>
@@ -59,10 +72,22 @@ const Ecg: NextPage = () => {
             </Heading>
 
             <Box maxW="container.sm" px={[0, 20]}>
-              <Text mb={8}>
+              <Text mb={6}>
                 AI
                 ทำนายความน่าจะเป็นของการมีรอยแผลเป็นในหัวใจและค่าประสิทธิภาพการทำงานของหัวใจห้องล่างซ้ายจากภาพสแกนคลื่นไฟฟ้าหัวใจ
                 (Electrocardiogram, ECG) แบบ 12 Lead
+              </Text>
+              <Heading as="h6" fontSize="md" color="secondary.400" mb={1}>
+                วิธีใช้งาน
+              </Heading>
+              <Text mb={6}>
+                1. อัปโหลดภาพสแกน ECG ในบริเวณกรอบสี่เหลี่ยม
+                <br />
+                2. กดปุ่ม
+                <Text as="span" color="primary.300" fontWeight={600}>
+                  ทำนายผล
+                </Text>{" "}
+                และรอโมเดลทำนายผล
               </Text>
 
               <Box left={[0, "50%"]} right={[0, "50%"]}>
@@ -88,6 +113,11 @@ const Ecg: NextPage = () => {
                       })
                       .finally(() => {
                         setIsLoadingResult(false);
+
+                        predictionContainer.current?.scrollIntoView({
+                          behavior: "smooth",
+                          block: "start",
+                        });
                       });
                   }}
                   isLoading={isLoadingResult}
@@ -99,10 +129,21 @@ const Ecg: NextPage = () => {
 
         {/* if prediction result valid */}
         {result && Array.isArray(result) && (
-          <Box mb={-12}>
-            <Box mb={16}>
-              <Prediction predictionResult={result} />
-              <Box maxW="md" pt={6} mx="auto">
+          <Box ref={predictionContainer} mb={-12}>
+            <Box ref={resultImageContainer} mb={16}>
+              <Stack direction="column" gap={4} pt={10}>
+                <Flex justify="space-between" align="center" mb={6}>
+                  <Heading as="h4" fontSize="2xl" color="secondary.400">
+                    ผลทำนาย
+                  </Heading>
+                  <DownloadResultButton
+                    targetRef={resultImageContainer.current}
+                  />
+                </Flex>
+                <Prediction predictionResult={result} />
+              </Stack>
+
+              <Box pt={6} textAlign="center">
                 <Text fontSize="xs">
                   <Text as="span" fontWeight="semibold">
                     หมายเหตุ:&nbsp;

@@ -10,10 +10,6 @@ interface DownloadResultButtonProps {
 const DownloadResultButton = ({ targetRef }: DownloadResultButtonProps) => {
   const { startServer, stopServer } = useMirage();
 
-  if (!targetRef) {
-    return null;
-  }
-
   return (
     <Button
       id="download-result-button"
@@ -24,6 +20,11 @@ const DownloadResultButton = ({ targetRef }: DownloadResultButtonProps) => {
       leftIcon={<BiDownload />}
       px={2}
       onClick={() => {
+        if (!targetRef) {
+          console.log("[ECG-APP-DEBUG] targetRef is not ready..");
+          return null;
+        }
+
         // stop mirage interception
         if (stopServer) {
           stopServer();
@@ -48,9 +49,6 @@ const DownloadResultButton = ({ targetRef }: DownloadResultButtonProps) => {
 
         // save as image
         domtoimage.toJpeg(targetRef).then((dataUrl: string) => {
-          downloadButton.style.visibility = "visible";
-          console.log({ dataUrl });
-
           const link = document.createElement("a");
           const ts = new Date()
             .toDateString()
@@ -69,6 +67,9 @@ const DownloadResultButton = ({ targetRef }: DownloadResultButtonProps) => {
           targetRef.style.paddingRight = defaultStyle.paddingRight;
           targetRef.style.backgroundColor = defaultStyle.backgroundColor;
           downloadButton.style.visibility = "visible";
+
+          // clean up
+          link.remove();
 
           // restart server
           if (startServer) {

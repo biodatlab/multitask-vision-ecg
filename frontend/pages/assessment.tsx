@@ -100,9 +100,9 @@ const Assessment = () => {
       </Box>
 
       {/* results */}
-      {results.length > 0 && (
+      {results && Array.isArray(results) && (
         <>
-          <Box position="relative" textAlign="center" py={10}>
+          <Box position="relative" textAlign="center">
             <Box
               position="absolute"
               top={0}
@@ -112,13 +112,17 @@ const Assessment = () => {
               h="100%"
               backgroundColor="white"
             />
-            <Box ref={predictionContainer} position="relative">
+            <Box
+              ref={predictionContainer}
+              position="relative"
+              py={10}
+              display={results.length === 0 ? "none" : undefined}
+            >
               <Stack direction="column" gap={4} pt={10} alignItems="flex-start">
                 <Flex w="100%" justify="space-between" align="center" mb={6}>
                   <Heading as="h4" fontSize="2xl" color="secondary.400">
                     ผลการคำนวณ
                   </Heading>
-                  {/* TODO: fix loading order properly */}
                   <DownloadResultButton
                     targetRef={predictionContainer.current}
                   />
@@ -158,7 +162,7 @@ const Assessment = () => {
           </Box>
 
           {/* model description */}
-          <Box>
+          <Box display={results.length === 0 ? "none" : undefined}>
             <VStack gap={6} alignItems="flex-start" py={12} pb={16}>
               <Heading
                 as="h5"

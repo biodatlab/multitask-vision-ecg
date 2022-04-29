@@ -1,4 +1,5 @@
 import { createServer } from "miragejs";
+import { processAssessmentRequest } from "../pages/api/assessment";
 
 const TITLE_DESC_MAP = {
   scar: {
@@ -53,6 +54,13 @@ export function makeServer({ environment = "test" } = {}) {
         });
       });
 
+      this.post("/assessment", (schema, request) => {
+        const reqBody = JSON.parse(request.requestBody);
+        const results = processAssessmentRequest(reqBody);
+
+        return results;
+      });
+
       /**
        * @see https://github.com/vercel/next.js/issues/16874
        */
@@ -67,10 +75,6 @@ export function makeServer({ environment = "test" } = {}) {
         }
 
         if (req.url?.includes("/__nextjs")) {
-          return true;
-        }
-
-        if (req.url?.includes("/assessment")) {
           return true;
         }
       });

@@ -18,28 +18,11 @@ const getRiskLabel = (percent: number) => {
 const snakeToCamel = (str: string): string =>
   str.toLowerCase().replace(/(_\w)/g, (m) => m.toUpperCase().substr(1));
 
-// -- API
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  if (req.method !== "POST") {
-    res.status(405).send({ message: "Only POST requests allowed" });
-    return;
-  }
-
-  const {
-    selectedDiseases,
-    data,
-  }: {
-    selectedDiseases: Array<string>;
-    data: { [key: string]: number };
-  } = req.body;
-
-  console.log("from /api route", {
-    selectedDiseases,
-    data,
-  });
+export const processAssessmentRequest = (reqBody: {
+  selectedDiseases: Array<string>;
+  data: { [key: string]: number };
+}) => {
+  const { selectedDiseases, data } = reqBody;
 
   const dataCamelCase = Object.entries(data).reduce(
     (acc, [key, value]) => ({
@@ -49,7 +32,7 @@ export default async function handler(
     {}
   );
 
-  const results = selectedDiseases.reduce<Array<prediction>>((acc, cur) => {
+  return selectedDiseases.reduce<Array<prediction>>((acc, cur) => {
     let logit;
     let title = "";
     let description = "";
@@ -89,6 +72,19 @@ export default async function handler(
       },
     ];
   }, [] as Array<prediction>);
+};
+
+// -- API
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  if (req.method !== "POST") {
+    res.status(405).send({ message: "Only POST requests allowed" });
+    return;
+  }
+
+  const results = processAssessmentRequest(req.body);
 
   // return results
   res.status(200).json(results);

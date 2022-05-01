@@ -67,8 +67,9 @@ const Ecg: NextPage = () => {
               mb={2}
             >
               AI ประเมินความเสี่ยง
-              <br />
-              จากภาพสแกนคลื่นไฟฟ้าหัวใจ
+              <Text as="span" display={{ base: "inline", md: "block" }}>
+                จากภาพสแกนคลื่นไฟฟ้าหัวใจ
+              </Text>
             </Heading>
 
             <Box maxW="container.sm" px={[0, 20]}>

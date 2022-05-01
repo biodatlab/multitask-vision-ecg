@@ -66,8 +66,9 @@ const Assessment = () => {
               mb={2}
             >
               แบบประเมินความเสี่ยง
-              <br />
-              ภาวะโรคหัวใจต่าง ๆ
+              <Text as="span" display={{ base: "inline", md: "block" }}>
+                ภาวะโรคหัวใจต่าง ๆ
+              </Text>
             </Heading>
 
             <Box maxW="container.sm" px={[0, 25]}>

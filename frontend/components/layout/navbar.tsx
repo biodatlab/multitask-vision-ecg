@@ -71,6 +71,10 @@ export default function WithSubnavigation({
     base: "link",
     md: "outline",
   });
+  const signInButtonLogo = useBreakpointValue({
+    base: undefined,
+    md: <BiUserCircle size="18px" />,
+  });
 
   return (
     <Box>
@@ -129,7 +133,7 @@ export default function WithSubnavigation({
           {isLoadingUserStatus ? null : !isLoggedIn ? (
             <Button
               variant={signInButtonVariant}
-              leftIcon={<BiUserCircle size="18px" />}
+              leftIcon={signInButtonLogo}
               fontSize={"sm"}
               fontWeight={600}
               colorScheme={"primary"}

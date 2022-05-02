@@ -119,7 +119,7 @@ const Assessment = () => {
               py={10}
               display={results.length === 0 ? "none" : undefined}
             >
-              <Stack direction="column" gap={4} pt={10} alignItems="flex-start">
+              <Stack direction="column" gap={4} pt={10}>
                 <Flex w="100%" justify="space-between" align="center" mb={6}>
                   <Heading as="h4" fontSize="2xl" color="secondary.400">
                     ผลการคำนวณ

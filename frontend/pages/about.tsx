@@ -59,7 +59,13 @@ const About = () => {
               </Heading>
             </Box>
 
-            <Box>
+            <Box
+              pt={{ base: 0, md: 2 }}
+              sx={{
+                marginTop: "auto !important",
+                marginBottom: "auto !important",
+              }}
+            >
               <Heading
                 as="h3"
                 fontSize={{ base: "xl", md: "2xl" }}

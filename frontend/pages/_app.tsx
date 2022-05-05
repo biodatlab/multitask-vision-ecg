@@ -4,6 +4,7 @@ import "@fontsource/ibm-plex-sans-thai/400.css";
 import "@fontsource/ibm-plex-sans-thai/600.css";
 import type { AppProps } from "next/app";
 import Head from "next/head";
+import SEO from "../components/seo";
 import { MirageProvider } from "../contexts/MirageContext";
 import "../styles/globals.css";
 
@@ -77,6 +78,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         <meta name="msapplication-config" content="/favicon/browserconfig.xml" />
         <meta name="theme-color" content="#ffffff" />
       </Head>
+      <SEO />
       <ChakraProvider theme={theme}>
         <Component {...pageProps} />
       </ChakraProvider>

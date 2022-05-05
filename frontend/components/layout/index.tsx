@@ -1,4 +1,4 @@
-import { Container, Flex, Spacer } from "@chakra-ui/react";
+import { Container, Flex, Spacer, useToast } from "@chakra-ui/react";
 import Footer from "./footer";
 // import { useAuthState } from "react-firebase-hooks/auth";
 // import LoginModal from "../components/loginModal";
@@ -10,6 +10,8 @@ interface LayoutProps {
 }
 
 const Layout = ({ children }: LayoutProps) => {
+  const toast = useToast();
+
   // const {
   //   isOpen: isOpenLoginModal,
   //   onClose: onCloseLoginModal,
@@ -37,7 +39,16 @@ const Layout = ({ children }: LayoutProps) => {
         // onClickLogout={logOut}
         // isLoadingUserStatus={loading}
         // isLoggedIn={!!user}
-        onClickLogin={() => {}}
+        onClickLogin={() => {
+          toast({
+            variant: "left-accent",
+            description: "ระบบลงทะเบียนยังไม่เปิดใช้งานในเวลานี้",
+            status: "warning",
+            duration: 3000,
+            isClosable: true,
+            position: "top-right",
+          });
+        }}
         onClickLogout={() => {}}
         isLoadingUserStatus={false}
         isLoggedIn={false}

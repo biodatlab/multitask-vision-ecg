@@ -10,10 +10,12 @@ import torchvision.models as models
 from pytorch_lightning import LightningModule
 import timm
 
+
 class SaveLoadMixin:
     """
     Mixin class for saving and loading models
     """
+
     def save_configs(self, save_path: str):
         json.dump(
             self.configs,
@@ -29,7 +31,7 @@ class SaveLoadMixin:
     ):
         """
         Loads model from configs.json and model.ckpt.
-        
+
         Parameters
         ==========
         model_path: str
@@ -51,16 +53,16 @@ class SaveLoadMixin:
         configs["device"] = device
 
         # Load model.
-        model = cls.load_from_checkpoint(op.join(model_path, "model.ckpt"), map_location = device, **configs)
+        model = cls.load_from_checkpoint(op.join(model_path, "model.ckpt"), map_location=device, **configs)
         # Load model to device.
         model.to(device)
 
-        # Try to convert model to half precision when using GPU.
-        if "cuda" in device:
-            try:
-                model.half()
-            except:
-                print("Model cannot be converted to half precision. Continuing with full precision.")        
+        # # Try to convert model to half precision when using GPU.
+        # if "cuda" in device:
+        #     try:
+        #         model.half()
+        #     except:
+        #         print("Model cannot be converted to half precision. Continuing with full precision.")
 
         # Set model to eval mode if not training.
         if not train:
@@ -379,6 +381,7 @@ class MultiTaskClinicalCNNModel(MultiTaskModel, SaveLoadMixin):
     """
     Multitask learning model for ECG image & Clinical Features with Lightning module
     """
+
     def __init__(
         self,
         in_channels: int = 1,
@@ -391,7 +394,7 @@ class MultiTaskClinicalCNNModel(MultiTaskModel, SaveLoadMixin):
         num_lvef_class: int = 2,
         loss_weights: dict = {"scar": [1, 1], "lvef": [1, 1]},
         scar_lvef_loss_ratio: list = [0.7, 0.3],
-        use_bias_head: bool = False, # Alias of bias_head. TODO: Retrain with bias_head.
+        use_bias_head: bool = False,  # Alias of bias_head. TODO: Retrain with bias_head.
         num_categorical_features: int = 5,
         num_numerical_features: int = 1,
         embedding_size: int = 5,
@@ -460,7 +463,7 @@ class MultiTaskClinicalCNNModel(MultiTaskModel, SaveLoadMixin):
             scar_lvef_loss_ratio=scar_lvef_loss_ratio,
             bias_head=use_bias_head,
             load_state_dict=load_state_dict,
-            device = device,
+            device=device,
             **kwargs,
         )
 

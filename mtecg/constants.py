@@ -15,6 +15,7 @@ cut_column_name = "cut"
 impute_column_name = "impute"
 
 categorical_feature_column_names = ["female_gender", "dm", "ht", "smoke", "dlp"]
+numerical_feature_column_names = ["age"]
 
 COLUMN_RENAME_MAP = {
     "age": "age",

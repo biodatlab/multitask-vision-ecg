@@ -24,7 +24,12 @@ def get_split_by_year(row):
 
 
 def load_ecg_dataframe(
-    csv_path: str, image_dir: str, drop_impute: bool = False, image_extension: str = "jpg"
+    csv_path: str,
+    image_dir: str,
+    lvef_threshold: int = 50,
+    do_split: bool = True,
+    drop_impute: bool = False,
+    image_extension: str = "jpg",
 ) -> pd.DataFrame:
     dataframe = pd.read_csv(csv_path).drop(columns=["Unnamed: 0"])
     # Lowercase column names for consistency.
@@ -60,7 +65,20 @@ def load_ecg_dataframe(
     dataframe[constants.age_column_name] = dataframe[constants.age_column_name] / 100
     dataframe[constants.age_column_name] = dataframe[constants.age_column_name].astype(float)
 
-    # Generate split column.
-    dataframe = dataframe.apply(get_split_by_year, axis=1)
+    # Categorize LVEF.
+    dataframe[constants.lvef_label_column_name] = dataframe[constants.lvef_label_column_name].apply(
+        lambda lvef: categorize_lvef(lvef, lvef_threshold)
+    )
 
+    # Generate split column.
+    if do_split:
+        dataframe = dataframe.apply(get_split_by_year, axis=1)
     return dataframe
+
+
+def merge_dict_list(dict_list_1, dict_list_2):
+    merged_dict_list = []
+    for dict_1, dict_2 in zip(dict_list_1, dict_list_2):
+        merged_dict = {**dict_1, **dict_2}
+        merged_dict_list.append(merged_dict)
+    return merged_dict_list

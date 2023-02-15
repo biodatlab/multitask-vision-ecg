@@ -1,6 +1,15 @@
 # Model files
 *.pkl
 
+# Log files
+*wandb*
+
+# Local files
+resources/
+datasets/
+*trained_models/
+local/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

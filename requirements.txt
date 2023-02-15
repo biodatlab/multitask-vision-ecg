@@ -1,0 +1,11 @@
+numpy
+pandas
+pdf2image
+wfdb
+opencv-python
+pillow
+biosppy
+timm
+pytorch-lightning
+xgboost
+albumentations

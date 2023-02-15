@@ -87,6 +87,30 @@ class SingleTaskModel(LightningModule, SaveLoadMixin):
         device: str = "cpu",
         **kwargs,
     ):
+        """
+        Parameters
+        ==========
+        in_channels: int
+            Number of input channels. Default is 1.
+        learning_rate: float
+            Learning rate for optimizer. Default is 1e-3.
+        use_timm: bool
+            Use timm pretrained model. Default is True.
+        pretrained: bool
+            Use pretrained model. Default is True.
+        backbone: str
+            Backbone model name. Default is "resnet18".
+        latent_dim: int
+            Latent dimension for the classification head. Default is 512.
+        num_classes: int
+            Number of classes for classification head. Default is 2.
+        bias_head: bool
+            Use bias for classification head. Default is False.
+        load_state_dict: str
+            Path to load state dict. Default is None.
+        device: str
+            Device to use. Default is "cpu".
+        """
         super().__init__()
         self.learning_rate = learning_rate
         self.accuracy = Accuracy()
@@ -200,6 +224,36 @@ class MultiTaskModel(LightningModule, SaveLoadMixin):
         device: str = "cpu",
         **kwargs,
     ):
+        """
+        Parameters
+        ==========
+        in_channels: int
+            Number of input channels. Default is 1.
+        learning_rate: float
+            Learning rate for optimizer. Default is 1e-3.
+        use_timm: bool
+            Use timm pretrained model. Default is True.
+        pretrained: bool
+            Use pretrained model. Default is True.
+        backbone: str
+            Backbone model name. Default is "resnet18".
+        latent_dim: int
+            Latent dimension for each classification head. Default is 512.
+        num_scar_class: int
+            Number of scar classes. Default is 2.
+        num_lvef_class: int
+            Number of lvef classes. Default is 2.
+        loss_weights: dict
+            Loss weights for each class. Default is {"scar": [1, 1], "lvef": [1, 1]}.
+        scar_lvef_loss_ratio: list
+            Loss ratio for scar and lvef. Default is [0.7, 0.3].
+        bias_head: bool
+            Use bias for classification head. Default is False.
+        load_state_dict: str
+            Path to load state dict. Default is None.
+        device: str
+            Device to use. Default is "cpu".
+        """
         super().__init__()
         self.learning_rate = learning_rate
         self.accuracy = Accuracy()
@@ -337,7 +391,7 @@ class MultiTaskClinicalCNNModel(MultiTaskModel, SaveLoadMixin):
         num_lvef_class: int = 2,
         loss_weights: dict = {"scar": [1, 1], "lvef": [1, 1]},
         scar_lvef_loss_ratio: list = [0.7, 0.3],
-        use_bias_head: bool = False,
+        use_bias_head: bool = False, # Alias of bias_head. TODO: Retrain with bias_head.
         num_categorical_features: int = 5,
         num_numerical_features: int = 1,
         embedding_size: int = 5,
@@ -382,6 +436,16 @@ class MultiTaskClinicalCNNModel(MultiTaskModel, SaveLoadMixin):
             Embedding size for categorical features. Default is 5.
         rnn_output_size: int
             RNN output size. Default is 10.
+        rnn_type: str
+            RNN type. Default is "rnn".
+        num_rnn_layers: int
+            Number of RNN layers. Default is 1.
+        pretrained_backbone_path: str
+            Path to pretrained backbone model. Default is None.
+        load_state_dict: str
+            Path to load state dict. Default is None.
+        device: str
+            Device to use. Default is "cpu".
         """
         super(MultiTaskClinicalCNNModel, self).__init__(
             in_channels=in_channels,
@@ -394,7 +458,7 @@ class MultiTaskClinicalCNNModel(MultiTaskModel, SaveLoadMixin):
             num_lvef_class=num_lvef_class,
             loss_weights=loss_weights,
             scar_lvef_loss_ratio=scar_lvef_loss_ratio,
-            use_bias_head=use_bias_head,
+            bias_head=use_bias_head,
             load_state_dict=load_state_dict,
             device = device,
             **kwargs,

@@ -10,8 +10,65 @@ import torchvision.models as models
 from pytorch_lightning import LightningModule
 import timm
 
+class SaveLoadMixin:
+    """
+    Mixin class for saving and loading models
+    """
+    def save_configs(self, save_path: str):
+        json.dump(
+            self.configs,
+            open(op.join(save_path, "configs.json"), "w", encoding="utf-8"),
+        )
 
-class SingleTaskModel(LightningModule):
+    @classmethod
+    def from_configs(
+        cls,
+        model_path: str,
+        train: bool = False,
+        device: str = "cpu",
+    ):
+        """
+        Loads model from configs.json and model.ckpt.
+        
+        Parameters
+        ==========
+        model_path: str
+            Path to the folder containing configs.json and model.ckpt
+        train: bool
+            Whether to load model in training mode
+        device: str
+            Device to load model on
+
+        Returns
+        =======
+        model: LightningModule
+        """
+        if isinstance(model_path, str):
+            configs = json.load(open(op.join(model_path, "configs.json"), "r", encoding="utf-8"))
+        else:
+            raise ValueError("configs must be a string path to a folder containing configs.json and model.ckpt")
+
+        configs["device"] = device
+
+        # Load model.
+        model = cls.load_from_checkpoint(op.join(model_path, "model.ckpt"), map_location = device, **configs)
+        # Load model to device.
+        model.to(device)
+
+        # Try to convert model to half precision when using GPU.
+        if "cuda" in device:
+            try:
+                model.half()
+            except:
+                print("Model cannot be converted to half precision. Continuing with full precision.")        
+
+        # Set model to eval mode if not training.
+        if not train:
+            model.eval()
+        return model
+
+
+class SingleTaskModel(LightningModule, SaveLoadMixin):
     """
     Single-task learning model with Lightning module
     """
@@ -27,6 +84,7 @@ class SingleTaskModel(LightningModule):
         num_classes: int = 2,
         bias_head: bool = False,
         load_state_dict: str = None,
+        device: str = "cpu",
         **kwargs,
     ):
         super().__init__()
@@ -119,30 +177,10 @@ class SingleTaskModel(LightningModule):
     def optimizer_zero_grad(self, epoch, batch_idx, optimizer, optimizer_idx):
         optimizer.zero_grad(set_to_none=True)
 
-    def save_configs(self, save_path: str):
-        json.dump(
-            self.configs,
-            open(op.join(save_path, "configs.json"), "w", encoding="utf-8"),
-        )
 
-    @classmethod
-    def from_configs(
-        cls,
-        model_path: str,
-    ):
-        if isinstance(model_path, str):
-            configs = json.load(open(op.join(model_path, "configs.json"), "r", encoding="utf-8"))
-        else:
-            raise ValueError("configs must be a string path to a folder containing configs.json and model.ckpt")
-        return cls(**configs).load_from_checkpoint(op.join(model_path, "model.ckpt"))
-        # misc_configs = ["training", "prepare_data_per_node", "allow_zero_length_dataloader_with_multiple_devices",
-        #         "trainer", "precision"]
-        # {k:v for k,v in model.__dict__.items() if not k.startswith("_") and k not in misc_configs}
-
-
-class MultiTaskModel(LightningModule):
+class MultiTaskModel(LightningModule, SaveLoadMixin):
     """
-    Multitask learning model with Lightning module
+    Multitask learning model for ECG image with Lightning module
     """
 
     def __init__(
@@ -159,13 +197,14 @@ class MultiTaskModel(LightningModule):
         scar_lvef_loss_ratio: list = [0.7, 0.3],
         bias_head: bool = False,
         load_state_dict: str = None,
+        device: str = "cpu",
         **kwargs,
     ):
         super().__init__()
         self.learning_rate = learning_rate
         self.accuracy = Accuracy()
-        self.scar_loss_fn = nn.CrossEntropyLoss(weight=torch.tensor(loss_weights["scar"], dtype=torch.float).cuda())
-        self.lvef_loss_fn = nn.CrossEntropyLoss(weight=torch.tensor(loss_weights["lvef"], dtype=torch.float).cuda())
+        self.scar_loss_fn = nn.CrossEntropyLoss(weight=torch.tensor(loss_weights["scar"], dtype=torch.float).to(device))
+        self.lvef_loss_fn = nn.CrossEntropyLoss(weight=torch.tensor(loss_weights["lvef"], dtype=torch.float).to(device))
         self.scar_loss_w, self.lvef_loss_w = scar_lvef_loss_ratio
 
         self.configs = {
@@ -281,32 +320,17 @@ class MultiTaskModel(LightningModule):
     def optimizer_zero_grad(self, epoch, batch_idx, optimizer, optimizer_idx):
         optimizer.zero_grad(set_to_none=True)
 
-    def save_configs(self, save_path: str):
-        json.dump(
-            self.configs,
-            open(op.join(save_path, "configs.json"), "w", encoding="utf-8"),
-        )
 
-    @classmethod
-    def from_configs(
-        cls,
-        model_path: str,
-    ):
-        if isinstance(model_path, str):
-            configs = json.load(open(op.join(model_path, "configs.json"), "r", encoding="utf-8"))
-        else:
-            raise ValueError("configs must be a string path to a folder containing configs.json and model.ckpt")
-        return cls(**configs).load_from_checkpoint(op.join(model_path, "model.ckpt"))
-
-
-class MultiTaskClinicalCNNModel(MultiTaskModel):
+class MultiTaskClinicalCNNModel(MultiTaskModel, SaveLoadMixin):
+    """
+    Multitask learning model for ECG image & Clinical Features with Lightning module
+    """
     def __init__(
         self,
-        pretrained_backbone_path: str = None,
         in_channels: int = 1,
         learning_rate: float = 1e-3,
-        use_timm: bool = False,
-        pretrained: bool = False,
+        use_timm: bool = True,
+        pretrained: bool = True,
         backbone: str = "resnet18",
         latent_dim: int = 512,
         num_scar_class: int = 2,
@@ -320,10 +344,45 @@ class MultiTaskClinicalCNNModel(MultiTaskModel):
         rnn_output_size: int = 10,
         rnn_type: str = "rnn",
         num_rnn_layers: int = 1,
+        pretrained_backbone_path: str = None,
         load_state_dict: str = None,
-        device: str = "cuda",
+        device: str = "cpu",
         **kwargs,
     ):
+        """
+        Parameters
+        ==========
+        in_channels: int
+            Number of input channels. Default is 1.
+        learning_rate: float
+            Learning rate for optimizer. Default is 1e-3.
+        use_timm: bool
+            Use timm pretrained model. Default is True.
+        pretrained: bool
+            Use pretrained model. Default is True.
+        backbone: str
+            Backbone model name. Default is "resnet18".
+        latent_dim: int
+            Latent dimension for each classification head. Default is 512.
+        num_scar_class: int
+            Number of scar classes. Default is 2.
+        num_lvef_class: int
+            Number of lvef classes. Default is 2.
+        loss_weights: dict
+            Loss weights for each class. Default is {"scar": [1, 1], "lvef": [1, 1]}.
+        scar_lvef_loss_ratio: list
+            Loss ratio for scar and lvef. Default is [0.7, 0.3].
+        use_bias_head: bool
+            Use bias for classification head. Default is False.
+        num_categorical_features: int
+            Number of categorical features. Default is 5.
+        num_numerical_features: int
+            Number of numerical features. Default is 1.
+        embedding_size: int
+            Embedding size for categorical features. Default is 5.
+        rnn_output_size: int
+            RNN output size. Default is 10.
+        """
         super(MultiTaskClinicalCNNModel, self).__init__(
             in_channels=in_channels,
             learning_rate=learning_rate,
@@ -337,7 +396,7 @@ class MultiTaskClinicalCNNModel(MultiTaskModel):
             scar_lvef_loss_ratio=scar_lvef_loss_ratio,
             use_bias_head=use_bias_head,
             load_state_dict=load_state_dict,
-            # device = device,
+            device = device,
             **kwargs,
         )
 

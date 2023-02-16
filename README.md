@@ -1,50 +1,33 @@
-# Vision-based ECG Classification using Convolutional Neural Network
+# Vision-based Myocardial Scar and Left Ventricular Ejection Fraction Classification for 12-lead ECG Scans using Multi-task DNN
 
-Classifying 12 lead Electrocardiogram (EKG) using Convolutional Neural Network (CNN).
-We train deep neural network (CNN) to classify image for 12-leads ECG scan.
-Data are provided from Siriraj Hospital, Thailand.
+We propose a multi-task myocardial scar (MS) and left ventricular ejection fraction (LVEF) prediction using ECG scans by
+developing deep learning models using over 14,000 ECG scans. Our model achieved an area under the receiver operating curve
+(AUC) of 0.837 and 0.934 on MS and LVEF classification tasks, outperforming cardiologists. We verified the model against
+a control population and got an accuracy of over 99 percent on both tasks. Our study demonstrates the potential of MS and
+LVEF classification by ECGs in clinical screening.
 
-## Requirements
+## Repository structure
 
-- Python (preferred Conda) >= 3.7
-- NodeJS >= 14.x.x
+- `mtecg`: core library for multi-task MS and LVEF classification
+- `notebooks`: Jupyter notebooks for experiments
+- `app`: frontend and backend code for the screening application
 
-For convenience, installing runner for the project and dependencies for the frontend is included in a single command:
+## Multi-task ECG Classification
 
-```sh
-npm run setup
-```
+`mtecg` contains a core library for multi-task MS and LVEF classification. This include the preprocessing pipeline,
+model architecture, and evaluation scripts.
 
-But you will still need to install the dependencies for the backend separately:
+## Experiment notebooks
 
-```sh
-cd backend
-pip install -r requirements.txt
+`notebooks` contains Jupyter notebooks for experiments including:
 
-# for mac user, poppler need to be installed via conda
-conda install -c conda-forge poppler
-```
+- Multi-task MS and LVEF classification
+- Transferred Multi-task MS and LVEF classification
+- Single-task MS and LVEF classification
+- Multi-task MS and LVEF classification with clinical data
 
-## Running the project
+## Screening application
 
-The repository contains `frontend` and `backend` applications. You can run this command in the root of the project to serve both applications at once:
-
-```sh
-npm run demo
-```
-
-You can run each application separately if you want:
-
-### Frontend
-
-```sh
-cd frontend
-npm run dev
-```
-
-### Backend
-
-```sh
-cd backend
-uvicorn api:app --reload
-```
+`app` folder contains the frontend and backend code for the screening application (in Thai).
+We design a UI for the application using [NEXT.js](https://nextjs.org/) and implement the backend
+using [FastAPI](https://fastapi.tiangolo.com/).

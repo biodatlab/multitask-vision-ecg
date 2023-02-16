@@ -10,6 +10,7 @@ datasets/
 *trained_models/
 local/
 notebooks/!*.ipynb
+notebooks/ecg-multi-task-with-clinical-features/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

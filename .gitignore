@@ -9,6 +9,7 @@ resources/
 datasets/
 *trained_models/
 local/
+notebooks/!*.ipynb
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

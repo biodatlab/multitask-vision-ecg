@@ -16,6 +16,7 @@ impute_column_name = "impute"
 
 categorical_feature_column_names = ["female_gender", "dm", "ht", "smoke", "dlp"]
 numerical_feature_column_names = ["age"]
+imputed_feature_column_names = ["dm", "ht", "smoke", "dlp"]
 
 COLUMN_RENAME_MAP = {
     "age": "age",

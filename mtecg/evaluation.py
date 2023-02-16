@@ -23,6 +23,7 @@ def evaluate_from_dataframe(
     categorical_feature_column_names=constants.categorical_feature_column_names,
     numerical_feature_column_names=constants.numerical_feature_column_names,
     is_control_population: bool = False,
+    average: str = "weighted",
 ) -> (pd.DataFrame, pd.DataFrame):
 
     output_dict_list = []
@@ -64,7 +65,10 @@ def evaluate_from_dataframe(
 
     result_dataframe = convert_output_to_dataframe(output_dict_list)
     metrics_dataframe = calculate_metrics(
-        result_dataframe, tasks=classifier.task, is_control_population=is_control_population
+        result_dataframe,
+        tasks=classifier.task,
+        is_control_population=is_control_population,
+        average=average,
     )
     return result_dataframe, metrics_dataframe
 
@@ -103,18 +107,23 @@ def convert_output_to_dataframe(result_dict_list: List[Dict[str, Any]]):
     return result_dataframe
 
 
-def calculate_metrics_per_task(result_dataframe, task: str, is_control_population: bool = False):
+def calculate_metrics_per_task(
+    result_dataframe,
+    task: str,
+    is_control_population: bool = False,
+    average: str = "weighted",
+):
     label_column_name = f"{task}_label"
     prediction_column_name = f"{task}_prediction"
     probability_column_name = f"{task}_probability"
 
-    auc = roc_auc_score(result_dataframe[label_column_name], result_dataframe[probability_column_name])
-    accuracy = accuracy_score(result_dataframe[label_column_name], result_dataframe[prediction_column_name])
-    f1 = f1_score(result_dataframe[label_column_name], result_dataframe[prediction_column_name])
     tn, fp, fn, tp = confusion_matrix(
         result_dataframe[label_column_name], result_dataframe[prediction_column_name]
     ).ravel()
+
+    accuracy = accuracy_score(result_dataframe[label_column_name], result_dataframe[prediction_column_name])
     specificity = tn / (tn + fp)
+    f1 = f1_score(result_dataframe[label_column_name], result_dataframe[prediction_column_name], average=average)
     fpr = fp / (fp + tn)
 
     metrics_dict = {
@@ -140,10 +149,15 @@ def calculate_metrics_per_task(result_dataframe, task: str, is_control_populatio
     return metrics_dataframe
 
 
-def calculate_metrics(result_dataframe, tasks: List[str] = ["scar", "lvef"], is_control_population: bool = False):
+def calculate_metrics(
+    result_dataframe,
+    tasks: List[str] = ["scar", "lvef"],
+    is_control_population: bool = False,
+    average: str = "weighted",
+):
     metrics_dataframe = pd.DataFrame()
     for task in tasks:
-        task_metrics_dataframe = calculate_metrics_per_task(result_dataframe, task)
+        task_metrics_dataframe = calculate_metrics_per_task(result_dataframe, task, is_control_population, average)
         metrics_dataframe = pd.concat([metrics_dataframe, task_metrics_dataframe], axis=1)
     metrics_dataframe.columns = tasks
     return metrics_dataframe

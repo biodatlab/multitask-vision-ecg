@@ -47,7 +47,7 @@ def load_ecg_dataframe(
         )
         # Set all labels to 0 for control population.
         dataframe[constants.scar_label_column_name] = 0
-        dataframe["LVEF"] = 0
+        dataframe["LVEF"] = 100
 
     # Lowercase column names for consistency.
     dataframe.columns = map(str.lower, dataframe.columns)

@@ -70,7 +70,7 @@ class ECGClassifier:
 
     @torch.no_grad()
     def _predict_multiclass(self, image: torch.Tensor, clinical_features: Dict[str, torch.Tensor] = None):
-        if clinical_features:
+        if clinical_features and isinstance(self.model, MultiTaskClinicalCNNModel):
             model_input = (
                 image.to(self.device),
                 clinical_features["numerical_features"].to(self.device),

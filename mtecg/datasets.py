@@ -67,10 +67,9 @@ class MultiTaskDataset(Dataset):
         image, label = Image.open(self.paths[index]).convert("RGB"), self.labels[index]
         if self.transforms:
             image = self.transforms(image=np.array(image))["image"]
-        lvef_label = categorize_lvef(label[1], threshold=self.lvef_threshold)
         return image, {
             "scar": torch.tensor(label[0], dtype=torch.long),
-            "lvef": torch.tensor(lvef_label, dtype=torch.long),
+            "lvef": torch.tensor(label[1], dtype=torch.long),
         }
 
 
@@ -93,7 +92,6 @@ class MultiTaskClinicalCNNDataset(MultiTaskDataset):
         if self.transforms:
             image = self.transforms(image=np.array(image))["image"]
 
-        lvef_label = categorize_lvef(label[1], threshold=self.lvef_threshold)
         ### result format (x_image, x_numerical, x_categorical), y
         return (
             (
@@ -101,5 +99,5 @@ class MultiTaskClinicalCNNDataset(MultiTaskDataset):
                 torch.tensor(numerical_feature, dtype=torch.float32),
                 torch.tensor(categorical_features, dtype=torch.long),
             ),
-            {"scar": torch.tensor(label[0], dtype=torch.long), "lvef": torch.tensor(lvef_label, dtype=torch.long)},
+            {"scar": torch.tensor(label[0], dtype=torch.long), "lvef": torch.tensor(label[1], dtype=torch.long)},
         )

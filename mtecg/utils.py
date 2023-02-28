@@ -35,6 +35,7 @@ def load_ecg_dataframe(
     imputer_dir: str = None,
     image_extension: str = "jpg",
     is_control_population: bool = False,
+    return_lvef_40_column: bool = False,
 ) -> pd.DataFrame:
 
     if not is_control_population:
@@ -95,6 +96,12 @@ def load_ecg_dataframe(
         dataframe[constants.age_column_name] = dataframe[constants.age_column_name].astype(float)
 
     # Categorize LVEF.
+    # Also return the LVEF_40 column if return_lvef_40_column is True.
+    if return_lvef_40_column:
+        dataframe[constants.lvef_40_column_name] = dataframe[constants.lvef_label_column_name].apply(
+            lambda lvef: categorize_lvef(lvef, 40)
+        )
+
     dataframe[constants.lvef_label_column_name] = dataframe[constants.lvef_label_column_name].apply(
         lambda lvef: categorize_lvef(lvef, lvef_threshold)
     )

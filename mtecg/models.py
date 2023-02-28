@@ -505,12 +505,18 @@ class MultiTaskClinicalCNNModel(MultiTaskModel, SaveLoadMixin):
 
         elif self.rnn_type == "birnn":
             self.clinical_rnn_layer = nn.RNN(
-                input_size=rnn_input_size, hidden_size=self.rnn_output_size, num_layers=num_rnn_layers, bidirectional=True
+                input_size=rnn_input_size,
+                hidden_size=self.rnn_output_size,
+                num_layers=num_rnn_layers,
+                bidirectional=True,
             )
 
         elif self.rnn_type == "bilstm":
             self.clinical_rnn_layer = nn.LSTM(
-                input_size=rnn_input_size, hidden_size=self.rnn_output_size, num_layers=num_rnn_layers, bidirectional=True
+                input_size=rnn_input_size,
+                hidden_size=self.rnn_output_size,
+                num_layers=num_rnn_layers,
+                bidirectional=True,
             )
 
         self.scar_head = nn.Linear(
@@ -575,7 +581,7 @@ class MultiTaskClinicalCNNModel(MultiTaskModel, SaveLoadMixin):
             _, (summarized_feature_embeddings, _) = self.clinical_rnn_layer(
                 preprocessed_feature_embeddings, (rnn_hidden_state_matrix, rnn_cell_state_matrix)
             )
-            
+
         elif self.rnn_type == "birnn":
             rnn_hidden_state_matrix = self.get_rnn_hidden_state(
                 (self.num_rnn_layers * 2, preprocessed_feature_embeddings.size(1), self.rnn_output_size)
@@ -586,7 +592,7 @@ class MultiTaskClinicalCNNModel(MultiTaskModel, SaveLoadMixin):
             )
 
             summarized_feature_embeddings = torch.sum(summarized_feature_embeddings, dim=0, keepdim=True)
-   
+
         elif self.rnn_type == "bilstm":
             rnn_hidden_state_matrix = self.get_rnn_hidden_state(
                 (self.num_rnn_layers * 2, preprocessed_feature_embeddings.size(1), self.rnn_output_size)
@@ -595,7 +601,7 @@ class MultiTaskClinicalCNNModel(MultiTaskModel, SaveLoadMixin):
             rnn_cell_state_matrix = self.get_rnn_hidden_state(
                 (self.num_rnn_layers * 2, preprocessed_feature_embeddings.size(1), self.rnn_output_size)
             )
-        
+
             # Pass the preprocessed feature embeddings through the LSTM layer
             _, (summarized_feature_embeddings, _) = self.clinical_rnn_layer(
                 preprocessed_feature_embeddings, (rnn_hidden_state_matrix, rnn_cell_state_matrix)

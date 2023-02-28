@@ -24,6 +24,7 @@ class ECGClassifier:
         model_class: Union[str, object] = "multi-task",
         device: str = "cpu",
         task: Optional[str] = ["scar"],
+        round_probabilities: bool = True,
     ):
         if isinstance(model_class, str):
             model_class = MODEL_STRING_TO_CLASS_MAP[model_class]
@@ -31,6 +32,7 @@ class ECGClassifier:
         self.model = model_class.from_configs(model_path, device=device, train=False)
         self.input_transforms = A.load(op.join(model_path, "transform.json"))
         self.device = device
+        self.round_probabilities = round_probabilities
 
         if isinstance(self.model, SingleTaskModel):
             if not isinstance(task, list):
@@ -85,7 +87,8 @@ class ECGClassifier:
     def _get_output_dict(self, logits):
         probability_tensor = F.softmax(logits, dim=1)
         probabilities = probability_tensor.tolist()[0]
-        probabilities = [round(p, 2) for p in probabilities]
+        if self.round_probabilities:
+            probabilities = [round(p, 2) for p in probabilities]
         predicted_probability_dict = {
             "negative": probabilities[0],
             "positive": probabilities[1],

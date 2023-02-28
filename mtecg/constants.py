@@ -10,6 +10,7 @@ lvef_label_column_name = "lvef"
 age_column_name = "age"
 year_column_name = "year"
 split_column_name = "split"
+lvef_40_column_name = "lvef_40"
 
 cut_column_name = "cut"
 impute_column_name = "impute"

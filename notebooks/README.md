@@ -5,7 +5,7 @@ This directory contains a collection of Jupyter notebooks that demonstrate the d
 
 ## Population Statistics
 
-- [`get_data_statistics.ipynb`](get_data_statistics.ipynb) - This notebook demonstrates how to get the prevalence of each clinical feature in the dataset. The prevalence of each type of myocardial scarring and the prevalence of LVEF<40% and LVEF<50% are also calculated.
+- [`get_dataset_statistics.ipynb`](get_dataset_statistics.ipynb) - This notebook demonstrates how to get the prevalence of each clinical feature in the dataset. The prevalence of each type of myocardial scarring and the prevalence of LVEF<40% and LVEF<50% are also calculated.
 
 ## Training
 

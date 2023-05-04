@@ -194,6 +194,12 @@ def get_run_name(configs: dict):
 def main(args):
     # Load configs.
     configs = json.load(open(args.config_path))
+    # Create parent save dir.
+    parent_save_dir = configs["parent_save_dir"]
+    os.makedirs(parent_save_dir, exist_ok=True)
+    # Create run name.
+    run_name = get_run_name(configs)
+
     # Init dataloaders.
     train_loader, valid_loader = get_dataloaders(args.image_dir, args.csv_path, configs=configs)
 
@@ -232,10 +238,6 @@ def main(args):
         train_dataloaders=train_loader,
         val_dataloaders=valid_loader,
     )
-
-    # Create run name.
-    os.makedirs(configs["parent_save_dir"], exist_ok=True)
-    run_name = get_run_name(configs)
 
     # Save model and configs.
     trainer.save_checkpoint(op.join(parent_save_dir, run_name, "model.ckpt"))

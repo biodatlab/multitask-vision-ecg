@@ -204,6 +204,231 @@ class SingleTaskModel(LightningModule, SaveLoadMixin):
         optimizer.zero_grad(set_to_none=True)
 
 
+class SingleTaskClinicalCNNModel(SingleTaskModel, SaveLoadMixin):
+    """
+    Singletask learning model for ECG image & Clinical Features with Lightning module
+    """
+
+    def __init__(
+        self,
+        in_channels: int = 1,
+        learning_rate: float = 1e-3,
+        use_timm: bool = True,
+        pretrained: bool = True,
+        backbone: str = "resnet18",
+        latent_dim: int = 512,
+        num_classes: int = 2,
+        bias_head: bool = False,
+        num_categorical_features: int = 5,
+        num_numerical_features: int = 1,
+        embedding_size: int = 5,
+        rnn_output_size: int = 10,
+        rnn_type: str = "rnn",
+        num_rnn_layers: int = 1,
+        pretrained_backbone_path: str = None,
+        load_state_dict: str = None,
+        device: str = "cpu",
+        **kwargs,
+    ):
+        """
+        Parameters
+        ==========
+        in_channels: int
+            Number of input channels. Default is 1.
+        learning_rate: float
+            Learning rate for optimizer. Default is 1e-3.
+        use_timm: bool
+            Use timm pretrained model. Default is True.
+        pretrained: bool
+            Use pretrained model. Default is True.
+        backbone: str
+            Backbone model name. Default is "resnet18".
+        latent_dim: int
+            Latent dimension for the classification head. Default is 512.
+        num_classes: int
+            Number of classes for the classification head. Default is 2.
+        bias_head: bool
+            Use bias for classification head. Default is False.
+        num_categorical_features: int
+            Number of categorical features. Default is 5.
+        num_numerical_features: int
+            Number of numerical features. Default is 1.
+        embedding_size: int
+            Embedding size for categorical features. Default is 5.
+        rnn_output_size: int
+            RNN output size. Default is 10.
+        rnn_type: str
+            RNN type. Default is "rnn".
+        num_rnn_layers: int
+            Number of RNN layers. Default is 1.
+        pretrained_backbone_path: str
+            Path to pretrained backbone model. Default is None.
+        load_state_dict: str
+            Path to load state dict. Default is None.
+        device: str
+            Device to use. Default is "cpu".
+        """
+        super(SingleTaskClinicalCNNModel, self).__init__(
+            in_channels=in_channels,
+            learning_rate=learning_rate,
+            use_timm=use_timm,
+            pretrained=pretrained,
+            backbone=backbone,
+            latent_dim=latent_dim,
+            num_classes=num_classes,
+            bias_head=bias_head,
+            load_state_dict=load_state_dict,
+            device=device,
+            **kwargs,
+        )
+
+        self._device = device
+        self.loss_fn = nn.CrossEntropyLoss()
+
+        ## add num_categorical_features, num_numerical_features, use_embedding, and embedding_size to the config
+        self.configs.update(
+            {
+                "num_categorical_features": num_categorical_features,
+                "num_numerical_features": num_numerical_features,
+                "embedding_size": embedding_size,
+                "rnn_output_size": rnn_output_size,
+                "rnn_type": rnn_type,
+            }
+        )
+
+        self.rnn_type = rnn_type
+        self.embedding_size = embedding_size
+        rnn_input_size = embedding_size + num_numerical_features
+        self.rnn_output_size = rnn_output_size
+        self.num_rnn_layers = num_rnn_layers
+
+        ### load model; if pretrained_backbone_path is provided
+        if pretrained_backbone_path:
+            # get base model from loaded SingleTaskModel() class
+            self.model = SingleTaskModel.from_configs(pretrained_backbone_path).model
+
+        self.embedding_layer = nn.Embedding(num_embeddings=2, embedding_dim=self.embedding_size)
+
+        if self.rnn_type == "rnn":
+            self.clinical_rnn_layer = nn.RNN(
+                input_size=rnn_input_size, hidden_size=self.rnn_output_size, num_layers=num_rnn_layers
+            )
+        elif self.rnn_type == "lstm":
+            self.clinical_rnn_layer = nn.LSTM(
+                input_size=rnn_input_size, hidden_size=self.rnn_output_size, num_layers=num_rnn_layers
+            )
+
+        elif self.rnn_type == "birnn":
+            self.clinical_rnn_layer = nn.RNN(
+                input_size=rnn_input_size,
+                hidden_size=self.rnn_output_size,
+                num_layers=num_rnn_layers,
+                bidirectional=True,
+            )
+
+        elif self.rnn_type == "bilstm":
+            self.clinical_rnn_layer = nn.LSTM(
+                input_size=rnn_input_size,
+                hidden_size=self.rnn_output_size,
+                num_layers=num_rnn_layers,
+                bidirectional=True,
+            )
+
+        self.classification_head = nn.Linear(
+            in_features=self.rnn_output_size * num_rnn_layers + latent_dim,
+            out_features=num_scar_class,
+            bias=bias_head,
+        )
+
+        self.save_hyperparameters()
+
+    def get_rnn_hidden_state(self, size):
+        return torch.zeros(size=size, device=self._device)
+
+    def forward(self, x):
+        """
+        x is a tuple with 3 elements:
+        1. x[0]: image array.
+        2. x[1]: numerical clinical features.
+        3. x[2]: categorical clinical features.
+        """
+        image_array, numerical_features, categorical_features = x
+
+        # Get image embeddings.
+        image_embeddings = self.model(image_array)
+        # Reshape numerical features.
+        numerical_features = numerical_features.reshape(-1, 1)
+        feature_embedding_list = []
+
+        categorical_features = torch.swapaxes(
+            categorical_features.view(categorical_features.size(0), categorical_features.size(-1)), 1, 0
+        )
+        for categorical_feature in categorical_features:
+            # Pass categorical feature through embedding layer.
+            categorical_embeddings = self.embedding_layer(categorical_feature)
+            # Concatenate raw numerical feature to the categorical embeddings.
+            feature_embeddings = torch.cat([categorical_embeddings, numerical_features], dim=1)
+            feature_embeddings = torch.unsqueeze(feature_embeddings, dim=0)
+            feature_embedding_list.append(feature_embeddings)
+
+        preprocessed_feature_embeddings = torch.cat(feature_embedding_list, dim=0)
+        if self.rnn_type == "rnn":
+            rnn_hidden_state_matrix = self.get_rnn_hidden_state(
+                (self.num_rnn_layers, preprocessed_feature_embeddings.size(1), self.rnn_output_size)
+            )
+            # Pass the preprocessed feature embeddings through the RNN layer
+            _, summarized_feature_embeddings = self.clinical_rnn_layer(
+                preprocessed_feature_embeddings, rnn_hidden_state_matrix
+            )
+        elif self.rnn_type == "lstm":
+            rnn_hidden_state_matrix = self.get_rnn_hidden_state(
+                (self.num_rnn_layers, preprocessed_feature_embeddings.size(1), self.rnn_output_size)
+            )
+            rnn_cell_state_matrix = self.get_rnn_hidden_state(
+                (self.num_rnn_layers, preprocessed_feature_embeddings.size(1), self.rnn_output_size)
+            )
+            # Pass the preprocessed feature embeddings through the LSTM layer
+            _, (summarized_feature_embeddings, _) = self.clinical_rnn_layer(
+                preprocessed_feature_embeddings, (rnn_hidden_state_matrix, rnn_cell_state_matrix)
+            )
+
+        elif self.rnn_type == "birnn":
+            rnn_hidden_state_matrix = self.get_rnn_hidden_state(
+                (self.num_rnn_layers * 2, preprocessed_feature_embeddings.size(1), self.rnn_output_size)
+            )
+            # Pass the preprocessed feature embeddings through the RNN layer
+            _, summarized_feature_embeddings = self.clinical_rnn_layer(
+                preprocessed_feature_embeddings, rnn_hidden_state_matrix
+            )
+
+            summarized_feature_embeddings = torch.sum(summarized_feature_embeddings, dim=0, keepdim=True)
+
+        elif self.rnn_type == "bilstm":
+            rnn_hidden_state_matrix = self.get_rnn_hidden_state(
+                (self.num_rnn_layers * 2, preprocessed_feature_embeddings.size(1), self.rnn_output_size)
+            )
+
+            rnn_cell_state_matrix = self.get_rnn_hidden_state(
+                (self.num_rnn_layers * 2, preprocessed_feature_embeddings.size(1), self.rnn_output_size)
+            )
+
+            # Pass the preprocessed feature embeddings through the LSTM layer
+            _, (summarized_feature_embeddings, _) = self.clinical_rnn_layer(
+                preprocessed_feature_embeddings, (rnn_hidden_state_matrix, rnn_cell_state_matrix)
+            )
+            summarized_feature_embeddings = torch.sum(summarized_feature_embeddings, dim=0, keepdim=True)
+
+        # Reshape the summarized feature embeddings.
+        summarized_feature_embeddings = summarized_feature_embeddings.view(
+            summarized_feature_embeddings.size(1), summarized_feature_embeddings.size(-1) * self.num_rnn_layers
+        )
+        # Concatenate image embeddings and summarized clinical features embeddings.([img_emb, num_feat, cat1_emb, cat2_emb, ..., catn_emb])
+        embedding_list = [image_embeddings, summarized_feature_embeddings]
+        embeddings = torch.cat(embedding_list, dim=1)
+        out = self.classification_head(embeddings)
+        return out
+
+
 class MultiTaskModel(LightningModule, SaveLoadMixin):
     """
     Multitask learning model for ECG image with Lightning module

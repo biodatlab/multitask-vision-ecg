@@ -314,7 +314,8 @@ class MultiTaskModel(LightningModule, SaveLoadMixin):
 
         scar = self.scar_head(embeddings)
         lvef = self.lvef_head(embeddings)
-        return {"scar": scar, "lvef": lvef}
+        # return {"scar": scar, "lvef": lvef}
+        return torch.cat([scar, lvef], dim=1)
 
     def training_step(self, batch, batch_idx):
         x, y = batch
@@ -617,4 +618,5 @@ class MultiTaskClinicalCNNModel(MultiTaskModel, SaveLoadMixin):
         embeddings = torch.cat(embedding_list, dim=1)
         scar = self.scar_head(embeddings)
         lvef = self.lvef_head(embeddings)
-        return {"scar": scar, "lvef": lvef}
+        # return {"scar": scar, "lvef": lvef}
+        return torch.cat([scar, lvef], dim=1)

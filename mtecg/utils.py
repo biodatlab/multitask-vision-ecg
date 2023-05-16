@@ -122,7 +122,8 @@ def load_ecg_dataframe(
 
     # Generate split column.
     if do_split:
-        dataframe = dataframe.apply(get_split_by_year, axis=1)
+        if "split" not in dataframe.columns:
+            dataframe = dataframe.apply(get_split_by_year, axis=1)
     return dataframe
 
 

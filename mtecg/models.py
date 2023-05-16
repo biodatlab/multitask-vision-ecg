@@ -10,6 +10,8 @@ import torchvision.models as models
 from pytorch_lightning import LightningModule
 import timm
 
+from transformers import get_linear_schedule_with_warmup
+
 
 class SaveLoadMixin:
     """
@@ -114,6 +116,8 @@ class SingleTaskModel(LightningModule, SaveLoadMixin):
             Device to use. Default is "cpu".
         """
         super().__init__()
+        self.save_hyperparameters()
+
         self.learning_rate = learning_rate
         self.accuracy = Accuracy()
         self.loss_fn = nn.CrossEntropyLoss()
@@ -190,9 +194,11 @@ class SingleTaskModel(LightningModule, SaveLoadMixin):
         return self.validation_step(batch, batch_idx)
 
     def configure_optimizers(self):
-        self.optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
-        self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            self.optimizer, mode="min", factor=0.2, patience=3, min_lr=1e-6, verbose=True
+        self.optimizer = torch.optim.AdamW(self.parameters(), lr=self.learning_rate)
+        self.scheduler = get_linear_schedule_with_warmup(
+            self.optimizer,
+            num_warmup_steps=100,
+            num_training_steps=self.trainer.estimated_stepping_batches,
         )
         return {
             "optimizer": self.optimizer,
@@ -200,7 +206,7 @@ class SingleTaskModel(LightningModule, SaveLoadMixin):
             "monitor": "val_loss",
         }
 
-    def optimizer_zero_grad(self, epoch, batch_idx, optimizer, optimizer_idx):
+    def optimizer_zero_grad(self, epoch, batch_idx, optimizer):
         optimizer.zero_grad(set_to_none=True)
 
 
@@ -336,7 +342,7 @@ class SingleTaskClinicalCNNModel(SingleTaskModel, SaveLoadMixin):
 
         self.classification_head = nn.Linear(
             in_features=self.rnn_output_size * num_rnn_layers + latent_dim,
-            out_features=num_scar_class,
+            out_features=num_classes,
             bias=bias_head,
         )
 
@@ -588,9 +594,11 @@ class MultiTaskModel(LightningModule, SaveLoadMixin):
         return self.validation_step(batch, batch_idx)
 
     def configure_optimizers(self):
-        self.optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
-        self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            self.optimizer, mode="min", factor=0.2, patience=3, min_lr=1e-6, verbose=True
+        self.optimizer = torch.optim.AdamW(self.parameters(), lr=self.learning_rate)
+        self.scheduler = get_linear_schedule_with_warmup(
+            self.optimizer,
+            num_warmup_steps=100,
+            num_training_steps=self.trainer.estimated_stepping_batches,
         )
         return {
             "optimizer": self.optimizer,
@@ -598,7 +606,7 @@ class MultiTaskModel(LightningModule, SaveLoadMixin):
             "monitor": "val_loss",
         }
 
-    def optimizer_zero_grad(self, epoch, batch_idx, optimizer, optimizer_idx):
+    def optimizer_zero_grad(self, epoch, batch_idx, optimizer):
         optimizer.zero_grad(set_to_none=True)
 
 

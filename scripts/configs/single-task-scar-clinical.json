@@ -1,8 +1,8 @@
 {
-	"model_type": "multi-task-clinical",
-	"parent_save_dir": "../trained_models/multi-task-clinical",
+	"model_type": "single-task-clinical",
+	"task": "scar",
+	"parent_save_dir": "../trained_models/single-task-clinical-scar",
 	"image_size": 384,
-	"lvef_threshold": 50,
 	"num_epochs": 30,
 	"batch_size": 16,
 	"accumulate_grad_batches": 1,
@@ -12,13 +12,8 @@
 	"pretrained": true,
 	"backbone": "resnet34d",
 	"latent_dim": 512,
-	"scar_class": 2,
-	"lvef_class": 2,
-	"scar_lvef_loss_ratio": [
-		0.7,
-		0.3
-	],
 	"bias_head": true,
+	"num_classes": 2,
 	"device": "cuda",
 	"num_workers": 0,
 	"embedding_size": 5,

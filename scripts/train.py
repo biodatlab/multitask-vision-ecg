@@ -3,11 +3,19 @@ import sys
 import json
 import os.path as op
 import numpy as np
+import pandas as pd
 from functools import partial
+import pytorch_lightning as pl
 from pytorch_lightning import LightningModule, Trainer, seed_everything
-from pytorch_lightning.callbacks import ModelCheckpoint, StochasticWeightAveraging
+from pytorch_lightning.callbacks import ModelCheckpoint, StochasticWeightAveraging, EarlyStopping
 from pytorch_lightning.loggers import WandbLogger
 
+from sklearn.experimental import enable_iterative_imputer
+from sklearn.impute import IterativeImputer
+import joblib
+from sklearn.linear_model import LinearRegression
+
+import wandb
 import torch
 from torch.utils.data import DataLoader
 import albumentations as A
@@ -17,7 +25,9 @@ module_dir = op.join(op.dirname(op.abspath(__file__)), "..")
 sys.path.append(module_dir)
 from mtecg import (
     ScarDataset,
+    ScarClinicalDataset,
     LVEFDataset,
+    LVEFClinicalDataset,
     MultiTaskDataset,
     MultiTaskClinicalCNNDataset,
     SingleTaskModel,
@@ -61,15 +71,16 @@ def get_train_transforms(image_size: int = 384):
     return train_transform
 
 
-def get_valid_transforms():
+def get_valid_transforms(image_size: int = 384):
+    image_size = (image_size, image_size)
     valid_transform = A.Compose([A.Resize(*image_size), A.Normalize(), ToTensorV2()])
     return valid_transform
 
 
 def init_dataset(dataframe: pd.DataFrame, transforms: object, configs: dict):
     model_type = configs["model_type"]
-    task = configs.get(["task"], "")
-    lvef_threshold = configs.get(["lvef_threshold"], None)
+    task = configs.get("task", "")
+    lvef_threshold = configs.get("lvef_threshold", None)
 
     dataset_kwargs = {
         "dataframe": dataframe,
@@ -80,8 +91,12 @@ def init_dataset(dataframe: pd.DataFrame, transforms: object, configs: dict):
 
     if "single" in model_type:
         if task == "scar":
+            if "clinical" in model_type:
+                return ScarClinicalDataset(**dataset_kwargs)
             return ScarDataset(**dataset_kwargs)
         elif task == "lvef":
+            if "clinical" in model_type:
+                return LVEFClinicalDataset(**dataset_kwargs)
             return LVEFDataset(**dataset_kwargs)
         else:
             raise ValueError(f"task {task} is not supported in single task model.")
@@ -95,6 +110,9 @@ def init_dataset(dataframe: pd.DataFrame, transforms: object, configs: dict):
 def get_dataloaders(image_dir: str, csv_path: str, configs: dict):
     dataframe = load_ecg_dataframe(csv_path, image_dir)
 
+    save_dir = op.join(configs["parent_save_dir"], get_run_name(configs))
+    os.makedirs(save_dir, exist_ok=True)
+
     # Combine old train and new train.
     train_df = dataframe[dataframe.split.isin(["old_train", "new_train"])].reset_index()
     # Combine old valid and new valid.
@@ -102,7 +120,7 @@ def get_dataloaders(image_dir: str, csv_path: str, configs: dict):
 
     if "clinical" in configs["model_type"]:
         # Get imputer from train set.
-        imputer = get_imputer(train_df)
+        imputer = get_imputer(train_df, configs)
         # Impute missing values in the train set.
         train_df[clinical_feature_columns] = imputer.transform(train_df[clinical_feature_columns])
         # Impute missing values in the valid set.
@@ -114,7 +132,7 @@ def get_dataloaders(image_dir: str, csv_path: str, configs: dict):
         # Save the best thresholds.
         joblib.dump(
             best_threshold_dict,
-            op.join(configs["parent_save_dir"], get_run_name["configs"], "imputer_threshold_dict.joblib"),
+            op.join(save_dir, "imputer_threshold_dict.joblib"),
         )
 
         # Apply the best thresholds to the train set and the valid set.
@@ -122,26 +140,33 @@ def get_dataloaders(image_dir: str, csv_path: str, configs: dict):
         valid_df = apply_thresholds(valid_df, best_threshold_dict)
 
     # Get train and valid transforms.
-    train_transform = get_train_transforms()
-    valid_transform = get_valid_transforms()
+    train_transform = get_train_transforms(configs["image_size"])
+    valid_transform = get_valid_transforms(configs["image_size"])
 
     # Init datasets.
     train_dataset = init_dataset(train_df, train_transform, configs)
     valid_dataset = init_dataset(valid_df, valid_transform, configs)
 
     # Init dataloaders.
-    train_loader = DataLoader(train_dataset, batch_size=configs["batch_size"], shuffle=True, pin_memory=True)
-    valid_loader = DataLoader(valid_dataset, batch_size=configs["batch_size"], shuffle=False, pin_memory=True)
+    train_loader = DataLoader(
+        train_dataset,
+        batch_size=configs["batch_size"],
+        shuffle=True,
+        pin_memory=True,
+        num_workers=configs["num_workers"],
+    )
+    valid_loader = DataLoader(
+        valid_dataset,
+        batch_size=configs["batch_size"],
+        shuffle=False,
+        pin_memory=True,
+        num_workers=configs["num_workers"],
+    )
 
     return train_loader, valid_loader
 
 
-def get_imputer(train_dataframe: pd.DataFrame):
-    from sklearn.experimental import enable_iterative_imputer
-    from sklearn.impute import IterativeImputer
-    import joblib
-    from sklearn.linear_model import LinearRegression
-
+def get_imputer(train_dataframe: pd.DataFrame, configs: dict):
     # Init imputer.
     imputer = IterativeImputer(missing_values=np.nan, max_iter=10, sample_posterior=True, random_state=42)
 
@@ -180,9 +205,9 @@ def setup_wandb_logger(project_name: str, configs: dict):
 
 
 def get_run_name(configs: dict):
-    run_suffix = f"{args.image_size}"
+    run_suffix = f"{configs['image_size']}"
     if "lvef_threshold" in configs.keys():
-        run_suffix += f"_LVEF{str(lvef_threshold)}"
+        run_suffix += f"_LVEF{str(configs['lvef_threshold'])}"
 
     if "clinical" in configs["model_type"]:
         run_suffix += f"_{configs['rnn_type']}_dim{configs['rnn_output_size']}"
@@ -207,7 +232,7 @@ def main(args):
     model = get_model(configs)
     # Setup wandb logger.
     wandb_logger = setup_wandb_logger(project_name=args.project_name, configs=configs)
-    logger.watch(
+    wandb_logger.watch(
         model,
         # log_freq=300, # uncomment to log gradients
         log_graph=True,
@@ -222,14 +247,23 @@ def main(args):
         mode="min",
     )
 
+    earlystop_callback = EarlyStopping(
+        monitor="val_loss",
+        mode="min",
+        patience=5,
+    )
+
     # Init trainer.
     accumulate_grad_batches = configs.get("accumulate_grad_batches", 1)
+    precision = configs.get("precision", "16-mixed")
     trainer = pl.Trainer(
         accelerator="gpu",
-        logger=logger,
+        logger=wandb_logger,
         max_epochs=configs["num_epochs"],
-        callbacks=[checkpoint_callback, StochasticWeightAveraging(1e-3)],
+        callbacks=[checkpoint_callback, earlystop_callback, StochasticWeightAveraging(1e-3)],
         accumulate_grad_batches=accumulate_grad_batches,
+        precision=precision,
+        log_every_n_steps=1,
     )
 
     # Train model.
@@ -242,8 +276,8 @@ def main(args):
     # Save model and configs.
     trainer.save_checkpoint(op.join(parent_save_dir, run_name, "model.ckpt"))
     model.save_configs(op.join(parent_save_dir, run_name))
-    A.save(train_transform, op.join(parent_save_dir, run_name, "train_transform.json"))
-    A.save(valid_transform, op.join(parent_save_dir, run_name, "transform.json"))
+    A.save(get_train_transforms(configs["image_size"]), op.join(parent_save_dir, run_name, "train_transform.json"))
+    A.save(get_valid_transforms(configs["image_size"]), op.join(parent_save_dir, run_name, "transform.json"))
 
 
 if __name__ == "__main__":
@@ -251,7 +285,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--image_dir", type=str, default="../../ecg/ecg-cnn-local/siriraj_data/ECG_MRI_images_new/")
-    parser.add_argument("--csv_path", type=str, default="../../ECG_EF_Clin_train_dev_new.csv")
+    parser.add_argument("--csv_path", type=str, default="../datasets/all_ECG_cleared_duplicate_may23_final.csv")
     parser.add_argument("--config_path", type=str, default="configs/multi-task.json")
 
     parser.add_argument("--project_name", type=str, default="mtecg")

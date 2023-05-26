@@ -7,11 +7,12 @@ import PIL
 from PIL import Image
 import albumentations as A
 
-from mtecg import SingleTaskModel, MultiTaskModel, MultiTaskClinicalCNNModel
+from mtecg import SingleTaskModel, SingleTaskClinicalCNNModel, MultiTaskModel, MultiTaskClinicalCNNModel
 import mtecg.constants as constants
 
 MODEL_STRING_TO_CLASS_MAP = {
     "single-task": SingleTaskModel,
+    "single-task-clinical": SingleTaskClinicalCNNModel,
     "multi-task": MultiTaskModel,
     "multi-task-clinical": MultiTaskClinicalCNNModel,
 }
@@ -54,11 +55,17 @@ class ECGClassifier:
         image = self.input_transforms(image=np.array(image))["image"]
         image = image.unsqueeze(0)
 
-        if isinstance(self.model, SingleTaskModel):
+        if isinstance(self.model, SingleTaskModel) and clinical_features is None:
             return self._predict_singleclass(image)
         elif isinstance(self.model, MultiTaskModel) and clinical_features is None:
             return self._predict_multiclass(image)
-        elif isinstance(self.model, MultiTaskClinicalCNNModel) and clinical_features is not None:
+        elif isinstance(self.model, SingleTaskClinicalCNNModel):
+            assert (
+                clinical_features is not None
+            ), f"Clinical features must be provided for model type: {self.model.__class__}."
+            clinical_features = self._prepare_clinical_features(clinical_features)
+            return self._predict_singleclass(image, clinical_features)
+        elif isinstance(self.model, MultiTaskClinicalCNNModel):
             assert (
                 clinical_features is not None
             ), f"Clinical features must be provided for model type: {self.model.__class__}."
@@ -66,8 +73,17 @@ class ECGClassifier:
             return self._predict_multiclass(image, clinical_features)
 
     @torch.no_grad()
-    def _predict_singleclass(self, image):
-        logits = self.model(image.to(self.device))
+    def _predict_singleclass(self, image: torch.Tensor, clinical_features: Dict[str, torch.Tensor] = None):
+        if clinical_features and isinstance(self.model, SingleTaskClinicalCNNModel):
+            model_input = (
+                image.to(self.device),
+                clinical_features["numerical_features"].to(self.device),
+                clinical_features["categorical_features"].to(self.device),
+            )
+        else:
+            model_input = image.to(self.device)
+
+        logits = self.model(model_input)
         return {self.task[0]: self._get_output_dict(logits)}
 
     @torch.no_grad()

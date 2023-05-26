@@ -12,7 +12,7 @@ year_column_name = "year"
 split_column_name = "split"
 lvef_40_column_name = "lvef_40"
 
-cut_column_name = "cut"
+cut_column_name = "new_cut"
 impute_column_name = "impute"
 
 categorical_feature_column_names = ["female_gender", "dm", "ht", "smoke", "dlp"]

@@ -9,6 +9,7 @@ from sklearn.metrics import roc_auc_score, accuracy_score, f1_score, confusion_m
 from mtecg import (
     SingleTaskModel,
     MultiTaskClinicalCNNModel,
+    SingleTaskClinicalCNNModel
 )
 from mtecg.classifier import ECGClassifier
 from mtecg.utils import merge_dict_list
@@ -34,7 +35,7 @@ def evaluate_from_dataframe(
 
     model_input_dict_list = [{"image": path} for path in image_paths]
 
-    if isinstance(classifier.model, MultiTaskClinicalCNNModel):
+    if isinstance(classifier.model, (SingleTaskClinicalCNNModel, MultiTaskClinicalCNNModel)):
         feature_lists = [list(dataframe[column_name]) for column_name in categorical_feature_column_names]
         feature_lists += [list(dataframe[column_name]) for column_name in numerical_feature_column_names]
 

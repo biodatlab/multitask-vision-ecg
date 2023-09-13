@@ -109,42 +109,66 @@ def convert_output_to_dataframe(result_dict_list: List[Dict[str, Any]]):
     return result_dataframe
 
 
+threshold_values = np.arange(0.0, 1.0, 0.01).tolist()
 def calculate_metrics_per_task(
     result_dataframe,
     task: str,
     is_control_population: bool = False,
     average: str = "weighted",
+    threshold_values: List[float] = threshold_values
 ):
     label_column_name = f"{task}_label"
     prediction_column_name = f"{task}_prediction"
     probability_column_name = f"{task}_probability"
 
-    tn, fp, fn, tp = confusion_matrix(
-        result_dataframe[label_column_name], result_dataframe[prediction_column_name]
-    ).ravel()
+    # Initialize an empty dictionary to store F1 scores for different thresholds
+    f1_scores = {}
 
-    accuracy = accuracy_score(result_dataframe[label_column_name], result_dataframe[prediction_column_name])
-    specificity = tn / (tn + fp)
-    f1 = f1_score(result_dataframe[label_column_name], result_dataframe[prediction_column_name], average=average)
-    fpr = fp / (fp + tn)
+    # Initialize variables to store the best F1 score and its corresponding threshold
+    best_f1 = 0.0
+    best_threshold = None
 
-    metrics_dict = {
-        "Accuracy": [accuracy],
-        "Sensitivity": [None],
-        "Specificity": [specificity],
-        "F1": [f1],
-        "AUC": [None],
-        "FPR": [fpr],
-        "FNR": [None],
-    }
+    # Iterate over different probability thresholds
+    for threshold in threshold_values:
+        # Calculate predicted labels based on the current threshold
+        predicted_labels = (result_dataframe[probability_column_name] >= threshold).astype(int)
 
-    if not is_control_population:
-        auc = roc_auc_score(result_dataframe[label_column_name], result_dataframe[probability_column_name])
+        # Get the true positive (tp), false positive (fp), true negative (tn), and false negative (fn).
+        tn, fp, fn, tp = confusion_matrix(
+            result_dataframe[label_column_name], predicted_labels
+        ).ravel()
+
+        # Calculate F1 score for the current threshold
+        f1 = f1_score(result_dataframe[label_column_name], predicted_labels, average=average)
+
+        # Store the F1 score in the dictionary with the threshold as the key
+        f1_scores[threshold] = f1
+
+        # Get a metrics dictionary for the current threshold
+        accuracy = accuracy_score(result_dataframe[label_column_name], predicted_labels)
+        specificity = tn / (tn + fp)
         sensitivity = tp / (tp + fn)
+        fpr = fp / (fp + tn)
         fnr = fn / (tp + fn)
-        metrics_dict["AUC"] = [auc]
-        metrics_dict["Sensitivity"] = [sensitivity]
-        metrics_dict["FNR"] = [fnr]
+
+        # Calculate the AUC score.
+        auc = roc_auc_score(result_dataframe[label_column_name], result_dataframe[probability_column_name])
+
+        current_metrics_dict = {
+            "Accuracy": [accuracy],
+            "Sensitivity": [sensitivity],
+            "Specificity": [specificity],
+            "F1": [f1],  # The best F1 score
+            "AUC": [auc],
+            "FPR": [fpr],
+            "FNR": [fnr],
+            "best_threshold": [threshold],  # The threshold corresponding to the best F1 score
+        }
+
+        # Update the best F1 score and the metrics dictionary if the current F1 score is better than the previous best F1 score.
+        if f1 > best_f1:
+            best_f1 = f1
+            metrics_dict = current_metrics_dict
 
     metrics_dataframe = pd.DataFrame(metrics_dict)
     metrics_dataframe = metrics_dataframe.T

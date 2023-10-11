@@ -39,7 +39,9 @@ def load_ecg_dataframe(
 ) -> pd.DataFrame:
 
     if not is_control_population:
-        dataframe = pd.read_csv(csv_path).drop(columns=["Unnamed: 0"])
+        dataframe = pd.read_csv(csv_path)
+        if "Unnamed: 0" in dataframe.columns:
+            dataframe.drop(columns=["Unnamed: 0"], inplace=True)
     else:
         dataframe = (
             pd.read_csv(csv_path)

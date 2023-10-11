@@ -29,6 +29,7 @@ def evaluate_from_dataframe(
 ) -> (pd.DataFrame, pd.DataFrame):
 
     output_dict_list = []
+    filenames = list(dataframe[constants.filename_column_name])
     image_paths = list(dataframe[path_column_name])
     scar_labels = list(dataframe[scar_column_name])
     lvef_labels = list(dataframe[lvef_column_name])
@@ -56,12 +57,14 @@ def evaluate_from_dataframe(
             for path, feature_dict in zip(image_paths, feature_dict_list)
         ]
 
-    for i, model_input_dict in enumerate(tqdm(model_input_dict_list)):
+    for i, (model_input_dict, filename) in enumerate(tqdm(zip(model_input_dict_list, filenames))):
         output_dict = classifier.predict(**model_input_dict)
         if "scar" in classifier.task:
             output_dict["scar"]["label"] = scar_labels[i]
+            output_dict["scar"]["filename"] = filename
         if "lvef" in classifier.task:
             output_dict["lvef"]["label"] = lvef_labels[i]
+            output_dict["lvef"]["filename"] = filename
 
         output_dict_list.append(output_dict)
 
@@ -80,30 +83,36 @@ def convert_output_to_dataframe(result_dict_list: List[Dict[str, Any]]):
         scar_label_list = []
         scar_prediction_list = []
         scar_probability_list = []
+        scar_filenames = []
     if "lvef" in result_dict_list[0]:
         lvef_label_list = []
         lvef_prediction_list = []
         lvef_probability_list = []
+        lvef_filenames = []
 
     for result_dict in result_dict_list:
         if "scar" in result_dict:
             scar_label_list.append(result_dict["scar"]["label"])
             scar_prediction_list.append(result_dict["scar"]["prediction"])
             scar_probability_list.append(result_dict["scar"]["probability"]["positive"])
+            scar_filenames.append(result_dict["scar"]["filename"])
         if "lvef" in result_dict:
             lvef_label_list.append(result_dict["lvef"]["label"])
             lvef_prediction_list.append(result_dict["lvef"]["prediction"])
             lvef_probability_list.append(result_dict["lvef"]["probability"]["positive"])
+            lvef_filenames.append(result_dict["lvef"]["filename"])
 
     final_result_dict = {}
     if "scar" in result_dict_list[0]:
         final_result_dict["scar_label"] = scar_label_list
         final_result_dict["scar_prediction"] = scar_prediction_list
         final_result_dict["scar_probability"] = scar_probability_list
+        final_result_dict["filename"] = scar_filenames
     if "lvef" in result_dict_list[0]:
         final_result_dict["lvef_label"] = lvef_label_list
         final_result_dict["lvef_prediction"] = lvef_prediction_list
         final_result_dict["lvef_probability"] = lvef_probability_list
+        final_result_dict["filename"] = lvef_filenames
 
     result_dataframe = pd.DataFrame(final_result_dict)
     return result_dataframe

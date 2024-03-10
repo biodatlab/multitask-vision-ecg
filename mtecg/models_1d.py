@@ -18,14 +18,14 @@ NUM_ECG_LEADS = 12
 class LeadEmbeddingMixin:
     def get_lead_embeddings(self, leads_batch):
         # There are 12 leads in each ECG.
-        lead_embedding_list = []
-        for i in range(NUM_ECG_LEADS):
-            lead_batch = leads_batch[:, i, :].unsqueeze(1).unsqueeze(1)
-            lead_embedding = self.model(lead_batch)
-            lead_embedding_list.append(lead_embedding)
+        batch_size = leads_batch.shape[0]
+        leads_batch = leads_batch.view(batch_size * 12, 1, -1)
+        leads_batch = leads_batch.unsqueeze(1)
+        lead_embeddings = self.model(leads_batch)
+        lead_embeddings = lead_embeddings.view(batch_size, 12, -1)
 
         # Average the lead embeddings.
-        lead_embeddings = torch.mean(torch.stack(lead_embedding_list), dim=0)
+        lead_embeddings = torch.mean(lead_embeddings, dim=1)
         return lead_embeddings
 
 
@@ -126,7 +126,7 @@ class MultiTaskModel1D(MultiTaskModel, LeadEmbeddingMixin):
         lead_embeddings = F.relu(lead_embeddings)
         scar = self.scar_head(lead_embeddings)
         lvef = self.lvef_head(lead_embeddings)
-        return torch.cat([scar, lvef], dim=1)
+        return {"scar": scar, "lvef": lvef}
 
 
 class SingleTaskClinicalModel1D(SingleTaskClinicalCNNModel, LeadEmbeddingMixin, ClinicalEmbeddingMixin):
@@ -134,6 +134,12 @@ class SingleTaskClinicalModel1D(SingleTaskClinicalCNNModel, LeadEmbeddingMixin, 
         super().__init__(**kwargs)
         self.num_leads = num_leads
         self.model.conv1 = nn.Conv2d(1, 64, kernel_size=(1, 3), stride=1, padding=3)
+
+        num_in_features = self.model.get_classifier().in_features
+        latent_dim = self.configs['latent_dim']
+        num_rnn_layers = kwargs['num_rnn_layers']
+        num_classes = kwargs['num_classes']
+        bias_head = kwargs['bias_head']
 
         self.model.fc = nn.Linear(in_features=num_in_features, out_features=latent_dim, bias=False)
         self.head = nn.Linear(
@@ -169,6 +175,12 @@ class MultiTaskClinicalModel1D(SingleTaskClinicalCNNModel, LeadEmbeddingMixin, C
         self.num_leads = num_leads
         self.model.conv1 = nn.Conv2d(1, 64, kernel_size=(1, 3), stride=1, padding=3)
 
+        num_in_features = self.model.get_classifier().in_features
+        latent_dim = self.configs['latent_dim']
+        num_rnn_layers = self.configs['num_rnn_layers']
+        num_classes = self.configs['num_classes']
+        bias_head = self.configs['bias_head']
+
         self.model.fc = nn.Linear(in_features=num_in_features, out_features=latent_dim, bias=False)
         self.head = nn.Linear(
             in_features=self.rnn_output_size * num_rnn_layers + latent_dim,
@@ -193,5 +205,6 @@ class MultiTaskClinicalModel1D(SingleTaskClinicalCNNModel, LeadEmbeddingMixin, C
         embedding_list = [lead_embeddings, summarized_feature_embeddings]
         embeddings = torch.cat(embedding_list, dim=1)
         embeddings = F.relu(embeddings)
-        out = self.head(embeddings)
-        return out
+        scar = self.scar_head(embeddings)
+        lvef = self.lvef_head(embeddings)
+        return {"scar": scar, "lvef": lvef}

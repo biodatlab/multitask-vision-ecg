@@ -43,7 +43,7 @@ class ECGClinical1DDataset(ECG1DDataset):
             self.lead_arrays_list[index],
             self.numerical_feature_dataframe.iloc[[index]].to_numpy(),
             self.categorical_feature_dataframe.iloc[[index]].to_numpy(),
-            self.labels[index],
+            self.label_list[index],
         )
 
         ### result format (x_lead_arrays, x_numerical, x_categorical), y
@@ -64,14 +64,14 @@ class MultiTask1DDataset(Dataset):
         scar_labels = list(dataframe[constants.scar_label_column_name])
         lvef_labels = list(dataframe[constants.lvef_label_column_name])
 
-        self.labels = list(zip(scar_labels, lvef_labels))
+        self.label_list = list(zip(scar_labels, lvef_labels))
 
     def __len__(self):
         return len(self.lead_arrays_list)
 
     def __getitem__(self, index):
         # dealing with the image 
-        lead_arrays, label = self.lead_arrays_list[index], self.labels[index]
+        lead_arrays, label = self.lead_arrays_list[index], self.label_list[index]
         return torch.tensor(lead_arrays, dtype=torch.float32), {
             "scar": torch.tensor(label[0], dtype=torch.long),
             "lvef": torch.tensor(label[1], dtype=torch.long),
@@ -92,7 +92,7 @@ class MultiTaskClinical1DDataset(MultiTask1DDataset):
             self.lead_arrays_list[index],
             self.numerical_feature_dataframe.iloc[[index]].to_numpy(),
             self.categorical_feature_dataframe.iloc[[index]].to_numpy(),
-            self.labels[index],
+            self.label_list[index],
         )
 
         ### result format (x_lead_arrays, x_numerical, x_categorical), y

@@ -34,7 +34,7 @@ def evaluate_from_dataframe(
     scar_labels = list(dataframe[scar_column_name])
     lvef_labels = list(dataframe[lvef_column_name])
 
-    model_input_dict_list = [{"image": path} for path in image_paths]
+    model_input_dict_list = [{"input_ecg": path} for path in image_paths]
 
     if isinstance(classifier.model, (SingleTaskClinicalCNNModel, MultiTaskClinicalCNNModel)):
         feature_lists = [list(dataframe[column_name]) for column_name in categorical_feature_column_names]
@@ -53,8 +53,69 @@ def evaluate_from_dataframe(
             feature_dict_list.append(feature_dict)
 
         model_input_dict_list = [
-            {"image": path, "clinical_features": feature_dict}
+            {"input_ecg": path, "clinical_features": feature_dict}
             for path, feature_dict in zip(image_paths, feature_dict_list)
+        ]
+
+    for i, (model_input_dict, filename) in enumerate(tqdm(zip(model_input_dict_list, filenames))):
+        output_dict = classifier.predict(**model_input_dict)
+        if "scar" in classifier.task:
+            output_dict["scar"]["label"] = scar_labels[i]
+            output_dict["scar"]["filename"] = filename
+        if "lvef" in classifier.task:
+            output_dict["lvef"]["label"] = lvef_labels[i]
+            output_dict["lvef"]["filename"] = filename
+
+        output_dict_list.append(output_dict)
+
+    result_dataframe = convert_output_to_dataframe(output_dict_list)
+    metrics_dataframe = calculate_metrics(
+        result_dataframe,
+        tasks=classifier.task,
+        is_control_population=is_control_population,
+        average=average,
+    )
+    return result_dataframe, metrics_dataframe
+
+def evaluate_from_dataframe_1d(
+    dataframe: pd.DataFrame,
+    classifier: ECGClassifier,
+    data_column_name=constants.data_arrays_column_name,
+    scar_column_name=constants.scar_label_column_name,
+    lvef_column_name=constants.lvef_label_column_name,
+    categorical_feature_column_names=constants.categorical_feature_column_names,
+    numerical_feature_column_names=constants.numerical_feature_column_names,
+    is_control_population: bool = False,
+    average: str = "weighted",
+) -> (pd.DataFrame, pd.DataFrame):
+
+    output_dict_list = []
+    filenames = list(dataframe[constants.filename_column_name])
+    lead_arrays_lists = list(dataframe[data_column_name])
+    scar_labels = list(dataframe[scar_column_name])
+    lvef_labels = list(dataframe[lvef_column_name])
+
+    model_input_dict_list = [{"input_ecg": lead_arrays_list} for lead_arrays_list in lead_arrays_lists]
+
+    if isinstance(classifier.model, (SingleTaskClinicalCNNModel, MultiTaskClinicalCNNModel)):
+        feature_lists = [list(dataframe[column_name]) for column_name in categorical_feature_column_names]
+        feature_lists += [list(dataframe[column_name]) for column_name in numerical_feature_column_names]
+
+        feature_array = np.array(feature_lists)
+        column_names = categorical_feature_column_names + numerical_feature_column_names
+        # Convert the numpy array to a list of dictionaries for each patient with keys based on the categorical and numerical feature column names
+        rows, columns = feature_array.shape
+
+        feature_dict_list = []
+        for column in range(columns):
+            feature_dict = {}
+            for column_name, feature in zip(column_names, feature_array[:, column]):
+                feature_dict[column_name] = feature
+            feature_dict_list.append(feature_dict)
+
+        model_input_dict_list = [
+            {"input_ecg": lead_arrays_list, "clinical_features": feature_dict}
+            for lead_arrays_list, feature_dict in zip(lead_arrays_lists, feature_dict_list)
         ]
 
     for i, (model_input_dict, filename) in enumerate(tqdm(zip(model_input_dict_list, filenames))):

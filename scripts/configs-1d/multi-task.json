@@ -1,0 +1,25 @@
+{
+	"model_type": "multi-task-1d",
+	"dataset": "all",
+	"parent_save_dir": "../trained_models/1d/multi-task",
+	"sample_rate": 200,
+	"lvef_threshold": 50,
+	"num_epochs": 30,
+	"batch_size": 16,
+	"accumulate_grad_batches": 1,
+	"in_channels": 3,
+	"learning_rate": 5e-3,
+	"use_timm": true,
+	"pretrained": true,
+	"backbone": "resnet34d",
+	"latent_dim": 512,
+	"scar_class": 2,
+	"lvef_class": 2,
+	"scar_lvef_loss_ratio": [
+		0.7,
+		0.3
+	],
+	"bias_head": true,
+	"device": "cuda",
+	"num_workers": 0
+}

@@ -1,12 +1,14 @@
-# Computer vision-based myocardial scar and left ventricular ejection fraction classification for 12-lead electrocardiography scans using a multi-task deep neural network
+# Myocardial scar and left ventricular ejection fraction classification for electrocardiography image using multi-task deep learning
 
-- **Background:** Myocardial scar (MS) and left ventricular ejection fraction (LVEF) are important cardiovascular parameters. Cardiac magnetic resonance (CMR) can accurately access MS and LVEF, but it is costly and often unavailable in limited-resource settings. Electrocardiogram (ECG) is a widely used alternative due to its affordability and availability. The most commonly used ECG devices produce a printed image that is manually read. Alternatively, computer-based ECG interpretation could yield broad and far-reaching benefits. 
-- **Methods:** Our study describes the development of a computer vision-based multi-task deep learning prediction model to read ECG scan images to distinguish MS and LVEF. Multiple deep learning models were developed on retrospective dataset of 14,052 ECGs with corresponding ground truth labels from CMR, which were separated into training, development, and test datasets. We also added clinical features to the model to compare the prediction performance. Our models were evaluated on the test dataset, prevalence-specific dataset, and against cardiologists.
-- **Findings:** Our best model, the multi-task with clinical features, which yielded an area under the receiver operating curve of 0·848 (95%CI: 0·822 - 0·871) and 0·939 (95%CI: 0·921 - 0·954) for MS and LVEF classification, respectively, outperformed cardiologists. The AUC for MS classification of the multi-task both formats models was 0·835 (95%CI: 0·828 - 0·843) in the prevalence-specific test dataset.
-Interpretation: Our results demonstrate the potential of computer-based MS and LVEF classification from ECG scan images in clinical screening. Our results demonstrate the potential of computer-based MS and LVEF classification from ECG scan images in clinical screening.
+Published at [Scientific Reports](https://www.nature.com/articles/s41598-024-58131-6)
+
+Myocardial scar (MS) and left ventricular ejection fraction (LVEF) are vital cardiovascular parameters, conventionally determined using cardiac magnetic resonance (CMR). However, given the high cost and limited availability of CMR in resource-constrained settings, electrocardiograms (ECGs) are a cost-effective alternative. We developed computer vision-based multi-task deep learning models to analyze 12-lead ECG 2D images, predicting MS and LVEF < 50%. Our dataset comprises 14,052 ECGs with clinical features, utilizing ground truth labels from CMR. Our top-performing model achieved AUC values of 0.838 (95% CI 0.812–0.862) for MS and 0.939 (95% CI 0.921–0.954) for LVEF < 50% classification, outperforming cardiologists. Moreover, MS predictions in a prevalence-specific test dataset recorded an AUC of 0.812 (95% CI 0.810–0.814). Extracted 1D signals from ECG images yielded inferior performance, compared to the 2D approach. In conclusion, our results demonstrate the potential of computer-based MS and LVEF < 50% classification from ECG scan images in clinical screening offering a cost-effective alternative to CMR.
 
 <img src="images/workflow.png"  width="700">
 
+We applied Grad-CAM++ to visualize the areas of ECG images that influenced the model decision. Figure below shows examples of heatmaps generated on top of the ECGs for multi-task and multi-task with clinical model.
+
+<img src="images/gradcam.png"  width="700">
 
 ## Repository structure
 

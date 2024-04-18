@@ -35,3 +35,21 @@ model architecture, and evaluation scripts.
 `app` folder contains the frontend and backend code for the screening application (in Thai).
 We design a UI for the application using [NEXT.js](https://nextjs.org/) and implement the backend
 using [FastAPI](https://fastapi.tiangolo.com/).
+
+
+## Citation
+
+If you use our repository or our study, please cite us using the following Bibtex
+
+```
+@article{boribalburephan2024myocardial,
+  title={Myocardial scar and left ventricular ejection fraction classification for electrocardiography image using multi-task deep learning},
+  author={Boribalburephan, Atirut and Treewaree, Sukrit and Tantisiriwat, Noppawat and Yindeengam, Ahthit and Achakulvisut, Titipat and Krittayaphong, Rungroj},
+  journal={Scientific Reports},
+  volume={14},
+  number={1},
+  pages={7523},
+  year={2024},
+  publisher={Nature Publishing Group UK London}
+}
+```

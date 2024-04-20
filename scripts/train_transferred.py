@@ -107,21 +107,21 @@ def init_dataset(dataframe: pd.DataFrame, transforms: object, configs: dict):
         return MultiTaskDataset(**dataset_kwargs)
 
 
-def get_dataloaders(image_dir: str, csv_path: str, configs: dict, scheme: str = "mixed"):
+def get_dataloaders(image_dir: str, csv_path: str, configs: dict):
     dataframe = load_ecg_dataframe(csv_path, image_dir)
 
     save_dir = op.join(configs["parent_save_dir"], get_run_name(configs))
     os.makedirs(save_dir, exist_ok=True)
 
     # Get the old train and valid if scheme is 'pretrain'.
-    if scheme == "pretrain":
+    if configs["scheme"] == "pretrain":
         train_df = dataframe[dataframe.split.isin(["old_train"])].reset_index()
         valid_df = dataframe[dataframe.split.isin(["old_valid"])].reset_index()
     # Get the new train and valid if scheme is 'transfer'.
-    elif scheme == "transfer":
+    elif configs["scheme"] == "transfer":
         train_df = dataframe[dataframe.split.isin(["new_train"])].reset_index()
         valid_df = dataframe[dataframe.split.isin(["new_valid"])].reset_index()
-    elif scheme == "mixed":
+    elif configs["scheme"] == "mixed":
         train_df = dataframe[dataframe.split.isin(["old_train", "new_train"])].reset_index()
         valid_df = dataframe[dataframe.split.isin(["old_valid", "new_valid"])].reset_index()
 
@@ -233,11 +233,11 @@ def main(args):
     run_name = get_run_name(configs)
 
     # Init dataloaders.
-    train_loader, valid_loader = get_dataloaders(args.image_dir, args.csv_path, configs=configs, scheme=args.scheme)
+    train_loader, valid_loader = get_dataloaders(args.image_dir, args.csv_path, configs=configs)
 
     # Init model.
     model = get_model(configs)
-    if args.scheme == "transfer":
+    if configs["scheme"] == "transfer":
         # Explicitly specify train=True to instantiate the model with loss functions on the correct device.
         model = model.from_configs(configs["pretrained_model_path"], train=True, device="cuda")
 
@@ -295,10 +295,9 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--image_dir", type=str, default="../../ecg/ecg-cnn-local/siriraj_data/ECG_MRI_images_new/")
+    parser.add_argument("--image_dir", type=str, default="../datasets/siriraj_data/ECG_MRI_images_new/")
     parser.add_argument("--csv_path", type=str, default="../datasets/all_ECG_cleared_duplicate_may23_final.csv")
     parser.add_argument("--config_path", type=str, default="configs/multi-task.json")
-    parser.add_argument("--scheme", type=str, default="mixed")
 
     parser.add_argument("--project_name", type=str, default="mtecg")
 

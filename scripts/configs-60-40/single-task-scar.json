@@ -1,0 +1,18 @@
+{
+	"model_type": "single-task",
+	"task": "scar",
+	"parent_save_dir": "../trained_models/60-40/single-task-scar",
+	"image_size": 384,
+	"num_epochs": 30,
+	"batch_size": 16,
+	"accumulate_grad_batches": 1,
+	"in_channels": 3,
+	"learning_rate": 5e-3,
+	"use_timm": true,
+	"pretrained": true,
+	"backbone": "resnet34d",
+	"latent_dim": 512,
+	"bias_head": true,
+	"device": "cuda",
+	"num_workers": 0
+}

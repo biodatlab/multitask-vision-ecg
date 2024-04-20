@@ -1,0 +1,30 @@
+{
+	"model_type": "multi-task-clinical",
+	"parent_save_dir": "../trained_models/60-40/multi-task-clinical",
+	"image_size": 384,
+	"lvef_threshold": 50,
+	"num_epochs": 30,
+	"batch_size": 16,
+	"accumulate_grad_batches": 1,
+	"in_channels": 3,
+	"learning_rate": 5e-3,
+	"use_timm": true,
+	"pretrained": true,
+	"backbone": "resnet34d",
+	"latent_dim": 512,
+	"scar_class": 2,
+	"lvef_class": 2,
+	"scar_lvef_loss_ratio": [
+		0.6,
+		0.4
+	],
+	"bias_head": true,
+	"device": "cuda",
+	"num_workers": 0,
+	"embedding_size": 5,
+	"rnn_type": "birnn",
+	"num_rnn_layers": 1,
+	"rnn_output_size": 512,
+	"num_categorical_features": 5,
+	"num_numerical_features": 1
+}

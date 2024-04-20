@@ -37,16 +37,6 @@ from mtecg import (
 )
 from mtecg.utils import load_ecg_dataframe, find_best_thresholds, apply_thresholds
 
-
-SEED = 42
-np.random.seed(SEED)
-seed_everything(SEED, workers=True)
-torch.manual_seed(SEED)
-torch.backends.cudnn.deterministic = True
-torch.backends.cudnn.benchmark = False
-torch.cuda.manual_seed(SEED)
-
-
 MODEL_TYPE_TO_CLASS_MAPPING = {
     "single-task": SingleTaskModel,
     "single-task-clinical": SingleTaskClinicalCNNModel,
@@ -217,6 +207,14 @@ def get_run_name(configs: dict):
 
 
 def main(args):
+    SEED = 42
+    np.random.seed(SEED)
+    seed_everything(SEED, workers=True)
+    torch.manual_seed(SEED)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    torch.cuda.manual_seed(SEED)
+
     # Load configs.
     configs = json.load(open(args.config_path))
     # Create parent save dir.
@@ -284,7 +282,7 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--image_dir", type=str, default="../../ecg/ecg-cnn-local/siriraj_data/ECG_MRI_images_new/")
+    parser.add_argument("--image_dir", type=str, default="../datasets/siriraj_data/ECG_MRI_images_new/")
     parser.add_argument("--csv_path", type=str, default="../datasets/all_ECG_cleared_duplicate_may23_final.csv")
     parser.add_argument("--config_path", type=str, default="configs/multi-task.json")
 

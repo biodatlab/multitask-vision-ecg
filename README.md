@@ -39,10 +39,10 @@ python preprocess_data.py \
 ```
 
 Here,
-`label_excel_path` is the path to the excel file containing the PDF file names, the labels (MS and LVEF), and the clinical features.
-`parent_dir` is the parent directory of the PDFs containing the ECGs.
-`save_dir` is the directory to save the extracted and preprocessed ECG images.
-`label_save_path` is the path to save the new label file with the ECG image paths.
+- `label_excel_path` is the path to the excel file containing the PDF file names, the labels (MS and LVEF), and the clinical features.
+- `parent_dir` is the parent directory of the PDFs containing the ECGs.
+- `save_dir` is the directory to save the extracted and preprocessed ECG images.
+- `label_save_path` is the path to save the new label file with the ECG image paths.
 
 **Training with the ECG images**
 [scripts/train.py](scripts/train.py):

@@ -13,7 +13,8 @@ We applied Grad-CAM++ to visualize the areas of ECG images that influenced the m
 ## Repository structure
 
 - `mtecg`: core library for multi-task MS and LVEF classification
-- `notebooks`: Jupyter notebooks for experiments
+- `notebooks`: Jupyter notebooks for dataset statistics, evaluation, and figures. See [notebooks/README.md](notebooks/README.md) for more details.
+- `scripts`: scripts for data preprocessing and model training
 - `app`: frontend and backend code for the screening application
 
 ## Multi-task ECG Classification
@@ -21,14 +22,72 @@ We applied Grad-CAM++ to visualize the areas of ECG images that influenced the m
 `mtecg` contains a core library for multi-task MS and LVEF classification. This include the preprocessing pipeline,
 model architecture, and evaluation scripts.
 
-## Experiment notebooks
+## Experiments
 
-`notebooks` contains Jupyter notebooks for experiments including:
+To reproduce the experiments in the paper, you can use the scripts in the `scripts` folder.
+There are example bash scripts for each part of the experiment.
 
-- Multi-task MS and LVEF classification
-- Transferred Multi-task MS and LVEF classification
-- Single-task MS and LVEF classification
-- Multi-task MS and LVEF classification with clinical data
+**Extraction of ECG from PDF**
+[scripts/preprocess_data.py](scripts/preprocess_data.py):
+
+```bash
+python preprocess_data.py \
+	--label_excel_path "../datasets/siriraj_data/ECG_MRI/ECG_MRI_80_training_10_development_for_aj_my_220707.1.xlsx" \
+	--parent_dir "../datasets/siriraj_data/ECG_MRI" \
+	--save_dir "../datasets/siriraj_data/ECG_MRI_images" \
+	--label_save_path "../datasets/siriraj_data/ECG_MRI/ECG_MRI_80_training_10_development_220707_image_labels.xlsx"
+```
+
+Here,
+`label_excel_path` is the path to the excel file containing the PDF file names, the labels (MS and LVEF), and the clinical features.
+`parent_dir` is the parent directory of the PDFs containing the ECGs.
+`save_dir` is the directory to save the extracted and preprocessed ECG images.
+`label_save_path` is the path to save the new label file with the ECG image paths.
+
+**Training with the ECG images**
+[scripts/train.py](scripts/train.py):
+
+```bash
+python train.py --config_path "configs/multi-task.json"
+```
+See [configs/multi-task.json](configs/multi-task.json) for the configuration file.
+
+## Usage
+Here we provide an example of how to use the trained model to predict MS and LVEF from an ECG image.
+Please note that the input ECG image should be a 2D image with similar lead arrangement as the training data.
+
+```python
+import torch
+from mtecg.classifier import ECGClassifier
+
+ecg_classifier = ECGClassifier(
+    "trained_models/multi-task/",
+    model_class="multi-task",
+    device="cuda" if torch.cuda.is_available() else "cpu",
+    round_probabilities=True
+    )
+output_dict = ecg_classifier.predict(ecg_image)
+```
+For multi-task models, the `output_dict` will have the following structure (in this example, the model predicts negative for both MS and LVEF):
+
+```python
+{
+    "scar": {
+        "prediction": 0,
+        "probability": {
+          "negative": 0.7,
+          "positive": 0.3,
+        }
+    },
+    "lvef": {
+        "prediction": 0,
+        "probability": {
+          "negative": 0.8,
+          "positive": 0.2,
+        }
+    }
+}
+```
 
 ## Screening application
 
